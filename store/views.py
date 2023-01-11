@@ -4,6 +4,7 @@ from store.models import Produtos, User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from .forms import ProfileForm
 
 
 # Create your views here.
@@ -46,3 +47,54 @@ def UserLogin(request):
         alert = True
         return render(request, 'login.html', {'alert': alert})
     return render(request, "login.html")
+
+
+def UserRegister(request):
+    if request.method == "POST":
+        username = request.POST['username']
+        email = request.POST['email']
+        first_name = request.POST['first_name']
+        last_name = request.POST['last_name']
+        password = request.POST['password']
+        confirm_password = request.POST['confirm_password']
+
+        if len(username) > 15:
+            messages.error(request, "Username must be under 15 characters.")
+            return redirect('/register')
+        if not username.isalnum():
+            messages.error(request, "Username must contain only letters and numbers.")
+            return redirect('/register')
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+            return redirect('/register')
+
+        user = User.objects.create_user(username, email, password)
+        user.first_name = first_name
+        user.last_name = last_name
+        user.save()
+        profile = Profile(user=user)
+        profile.save()
+        return render(request, 'login.html')
+    return render(request, "register.html")
+
+def UserLogout(request):
+    logout(request)
+    messages.success(request, "Successfully logged out")
+    return redirect('/login')
+
+@login_required(login_url = '/login')
+def myprofile(request):
+    if request.method=="POST":
+        user = request.user
+        profile = Profile(user=user)
+        profile.save()
+        form = ProfileForm(data=request.POST, files=request.FILES)
+        if form.is_valid():
+            form.save()
+            obj = form.instance
+            return render(request, "profile.html",{'obj':obj})
+    else:
+        form=ProfileForm()
+    return render(request, "profile.html", {'form':form})
+
+
