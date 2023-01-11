@@ -1,5 +1,4 @@
 {% extends 'basic.html' %}
-
 {% block title %} Log In {% endblock %}
 {% block loginactive %} active {% endblock loginactive %}
 {% block css %}
@@ -111,7 +110,7 @@ input[type="submit"]:active {
 <div id="login-box">
     <div class="items">
       <h1>Log In</h1>
-          <form action="/login/" method="post"> {% csrf_token %}
+          <form action="{% url 'login' %}" method="post"> {% csrf_token %}
               <input type="text" name="username" placeholder="Username" />
               <input type="password" name="password" placeholder="Password" />
               <input type="submit" name="signup_submit" value="Log In" />
