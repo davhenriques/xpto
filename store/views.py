@@ -58,3 +58,11 @@ def register(request):
     groups = Group.objects.all()
     context = {"groups": groups}
     return render(request, 'register.html', context)
+
+def testehomepage(request):
+    return render(request, 'homepage.html')
+
+
+
+
+
