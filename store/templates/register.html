@@ -44,6 +44,7 @@
     text-align: center;
     }
 
+    select,
     input[type="email"],
     input[type="text"],
     input[type="password"] {
@@ -61,6 +62,7 @@
     transition: 0.2s ease;
     }
 
+    input[type="email"]:focus,
     input[type="text"]:focus,
     input[type="password"]:focus {
     border-bottom: 2px solid #16a085;
@@ -110,13 +112,16 @@
     {% endfor %}
     <div id="login-box">
         <div class="items">
-            <h1>Register</h1>
+            <h1>Registro</h1>
             <form action="{% url 'register' %}" method="post"> {% csrf_token %}
                 <input type="text" name="username" placeholder="Username"/>
                 <input type="email" name="email" placeholder="E-mail"/>
                 <input type="password" name="password" placeholder="Password"/>
                 <select>
-                    <option></option>
+                    <option value="">Tipo de Utilizador</option>
+                    <option value="user">User</option>
+                    <option value="seller">Comercial Administrador</option>
+                    <option value="seller">Comercial Supervisor</option>
                 </select>
                 <input type="submit" name="signup_submit" value="Register"/>
             </form>
