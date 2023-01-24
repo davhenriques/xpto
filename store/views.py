@@ -30,6 +30,9 @@ def produto(request):
     return render(request, 'produto.html')
 
 
+def register(request):
+    return render(request, 'register.html')
+
 
 
 
