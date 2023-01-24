@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, HttpResponse, Http404
 from django.template.response import TemplateResponse
 from store.models import Produtos
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -31,9 +31,18 @@ def produto(request):
 
 
 def register(request):
-    return render(request, 'register.html')
-
-
-
-
-
+    if request.method == 'POST':
+        print('request.POST')
+        print(request.POST)
+        if request.POST['email'] == '' or request.POST['username'] == '' or request.POST['password'] == '' or '' == \
+                request.POST['group']:
+            messages.error(request, "Campos em branco")
+            return redirect('/register')
+        user = User.objects.create_user(request.POST['username'], request.POST['email'], request.POST['password'])
+        group = Group.objects.get(name=request.POST['group'])
+        user.save()
+        group.user_set.add(user)
+        return render(request, '../templates/registration/login.html')
+    groups = Group.objects.all()
+    context = {"groups": groups}
+    return render(request, 'register.html', context)

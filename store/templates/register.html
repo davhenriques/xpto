@@ -114,14 +114,16 @@
         <div class="items">
             <h1>Registro</h1>
             <form action="{% url 'register' %}" method="post"> {% csrf_token %}
-                <input type="text" name="username" placeholder="Username"/>
-                <input type="email" name="email" placeholder="E-mail"/>
-                <input type="password" name="password" placeholder="Password"/>
-                <select>
-                    <option value="">Tipo de Utilizador</option>
-                    <option value="user">User</option>
-                    <option value="seller">Comercial Administrador</option>
-                    <option value="seller">Comercial Supervisor</option>
+                <input type="text" name="username" placeholder="Username" required/>
+                <input type="email" name="email" placeholder="E-mail" required/>
+                <input type="password" name="password" placeholder="Password" required/>
+                <select name="group" required>
+                    <option value="" selected="true" disabled="disabled">Tipo de Utilizador</option>
+                    {% for group in groups %}
+                        {% if group.name != "admin" %}
+                            <option value="{{ group.name }}">{{ group.name }}</option>
+                        {% endif %}
+                    {% endfor %}
                 </select>
                 <input type="submit" name="signup_submit" value="Register"/>
             </form>
