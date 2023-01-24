@@ -1,6 +1,6 @@
 {% extends 'basic.html' %}
 {% block title %} Register {% endblock %}
-{% block loginactive %} active {% endblock loginactive %}
+{% block registeractive %} active {% endblock registeractive %}
 {% block css %}
     @import url(https://fonts.googleapis.com/css?family=Roboto:400,300,500);
     *:focus {
@@ -44,6 +44,7 @@
     text-align: center;
     }
 
+    input[type="email"],
     input[type="text"],
     input[type="password"] {
     display: block;
@@ -109,11 +110,15 @@
     {% endfor %}
     <div id="login-box">
         <div class="items">
-            <h1>Log In</h1>
-            <form action="{% url 'login' %}" method="post"> {% csrf_token %}
+            <h1>Register</h1>
+            <form action="{% url 'register' %}" method="post"> {% csrf_token %}
                 <input type="text" name="username" placeholder="Username"/>
+                <input type="email" name="email" placeholder="E-mail"/>
                 <input type="password" name="password" placeholder="Password"/>
-                <input type="submit" name="signup_submit" value="Log In"/>
+                <select>
+                    <option></option>
+                </select>
+                <input type="submit" name="signup_submit" value="Register"/>
             </form>
         </div>
     </div>
