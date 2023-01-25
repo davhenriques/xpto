@@ -34,7 +34,6 @@ def isComprador(user):
 def index(request):
     if request.method == 'GET':
         prods = Produtos.objects.all()
-        print(prods)
         context = {"prods": prods}
         return TemplateResponse(request, "index.html", context)
 
@@ -51,9 +50,12 @@ def checkout(request):
 
 @user_passes_test(lambda u: isComercial1(u) or isComercial2(u))
 def produtos(request):
-    p = Produtos(comercial=request.user, nome='teste', precobase=12.25, descricao="abcedfg")
-    p.save()
-    return render(request, 'produtos.html')
+    if request.method == 'GET':
+        prods = Produtos.objects.all()
+        print(prods)
+        context = {"prods": prods}
+        return TemplateResponse(request, "produtos.html", context)
+    return TemplateResponse(request, "produtos.html")
 
 
 def register(request):
