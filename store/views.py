@@ -30,14 +30,14 @@ def isComprador(user):
     return 'Comprador' in list(user.groups.values_list('name', flat=True))
 
 
-
-
 # views
 def index(request):
     if request.method == 'GET':
         prods = Produtos.objects.all()
+        print(prods)
         context = {"prods": prods}
         return TemplateResponse(request, "index.html", context)
+
 
 @user_passes_test(isComercial1)
 def cart(request):
@@ -48,10 +48,12 @@ def cart(request):
 def checkout(request):
     return render(request, "checkout.html")
 
-@user_passes_test(lambda u : isComercial1(u) or isComercial2(u))
-def produto(request):
-    print("def produto")
-    return render(request, 'produto.html')
+
+@user_passes_test(lambda u: isComercial1(u) or isComercial2(u))
+def produtos(request):
+    p = Produtos(comercial=request.user, nome='teste', precobase=12.25, descricao="abcedfg")
+    p.save()
+    return render(request, 'produtos.html')
 
 
 def register(request):
@@ -82,5 +84,3 @@ def register(request):
     groups = Group.objects.all()
     context = {"groups": groups}
     return render(request, 'register.html', context)
-
-
