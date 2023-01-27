@@ -86,6 +86,9 @@
             <h1 class="display-4">Os teus produtos</h1>
             <p class="lead">Verifica/Edita os teus produtos</p>
             <hr class="my-4">
+            <a href="/produtos?action=create#CreateProd">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Criar Produto</button>
+            </a>
             <p></p>
             <table class="table table-striped table-responsive-md btn-table">
 
@@ -101,20 +104,23 @@
 
                 <tbody>
                 {% for prod in prods %}
-                <tr>
-                    <th scope="row">{{ prod.id }}</th>
+                    <tr>
+                        <th scope="row">{{ prod.id }}</th>
 
-                    <td>{{ prod.nome }}</td>
-                    <td>{{ prod.descricao }}</td>
-                    <td>{{ prod.precobase }}€</td>
-                    <td>
-{#                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#EditProd">Launch demo modal</button>#}
-
-                        <svg role="button" data-toggle="modal" data-target="#EditProd" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil cursor-pointer" viewBox="0 0 16 16">
-                          <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
-                        </svg>
-                    </td>
-                </tr>
+                        <td>{{ prod.nome }}</td>
+                        <td>{{ prod.descricao }}</td>
+                        <td>{{ prod.precobase }}€</td>
+                        <td>
+                            {#                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#EditProd">Launch demo modal</button>#}
+                            <a href="/produtos?id={{ prod.id }}#EditProd">
+                                <svg
+                                     xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                     class="bi bi-pencil cursor-pointer" viewBox="0 0 16 16">
+                                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
                 {% endfor %}
                 </tbody>
 
@@ -125,23 +131,115 @@
     </div>
 
     <!-- Modal -->
-    <div class="modal fade" id="EditProd" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
+    {% block editprod %}
+        {% if req_prod %}
+            <div class="modal fade" id="EditProd" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Editar produto #{{ req_prod.id }}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="{% url 'produtos' %}" method="post"> {% csrf_token %}
+                                <input type="hidden" name="id" value="{{ req_prod.id }}">
+                                <input type="hidden" name="action" value="edit">
+                                <div class="form-group row">
+                                    <label for="nome" class="col-sm-2 col-form-label">Nome</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control" name="nome" id="nome" placeholder="Nome" value="{{ req_prod.nome }}">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="descricao" class="col-sm-2 col-form-label">Descrição</label>
+                                    <div class="col-sm-10">
+                                        <textarea id="descricao" name="descricao" rows="4" cols="50">{{ req_prod.descricao }}</textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="precobase" class="col-sm-2 col-form-label">Preço base</label>
+                                    <div class="col-sm-10">
+                                        <input type="number" step="0.01" name="precobase" class="form-control" id="precobase" placeholder="{{ req.prod }}" value="{{ req_prod.precobase }}">
+                                    </div>
+                                </div>
 
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Save changes</button>
-          </div>
-        </div>
-      </div>
-    </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-10">
+                                        <button type="submit" class="btn btn-primary">Gravar</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+{#                        <div class="modal-footer">#}
+{#                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>#}
+{#                        </div>#}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endblock %}
+
+    <!-- Modal Create -->
+    {% block createprod %}
+            <div class="modal fade" id="CreateProd" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Adicionar produto</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="{% url 'produtos' %}" method="post"> {% csrf_token %}
+                                <input type="hidden" name="action" value="create">
+                                <div class="form-group row">
+                                    <label for="nome" class="col-sm-2 col-form-label">Nome</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control" name="nome" id="nome" placeholder="Nome" value="">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="descricao" class="col-sm-2 col-form-label">Descrição</label>
+                                    <div class="col-sm-10">
+                                        <textarea id="descricao" class="form-control" name="descricao" rows="4" cols="50" placeholder="Descrição"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="precobase" class="col-sm-2 col-form-label">Preço base</label>
+                                    <div class="col-sm-10">
+                                        <input type="number" class="form-control" name="precobase" id="precobase" placeholder="1.00" value="{{ req_prod.precobase }}">
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <div class="col-sm-10">
+                                        <button type="submit" class="btn btn-primary">Gravar</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    {% endblock %}
+{% endblock %}
+{% block js %}
+    <script>
+
+        //shortcut for $(document).ready
+        $(function () {
+            if (window.location.hash) {
+
+                var hash = window.location.hash;
+                $(hash).modal('toggle');
+                console.log(hash);
+                window.history.pushState("object or string", "Title", "/produtos");
+            }
+        });
+    </script>
 {% endblock %}

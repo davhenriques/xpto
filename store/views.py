@@ -6,6 +6,7 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
+from decimal import Decimal
 
 
 # tests
@@ -50,18 +51,43 @@ def checkout(request):
 
 @user_passes_test(lambda u: isComercial1(u) or isComercial2(u))
 def produtos(request):
+    prods = Produtos.objects.all()
+    context = {"prods": prods}
     if request.method == 'GET':
-        prods = Produtos.objects.all()
-        print(prods)
-        context = {"prods": prods}
+        req_id = request.GET.get('id')
+        if req_id is not None:
+            try:
+                req_prod = Produtos.objects.get(id=req_id)
+                context['req_prod'] = req_prod
+            except:
+                print("No product found with id=" + req_id)
+
         return TemplateResponse(request, "produtos.html", context)
-    return TemplateResponse(request, "produtos.html")
+    if request.method == 'POST':
+        if request.POST.get('action') == 'edit':
+            try:
+                if request.POST.get('nome') is not None and request.POST.get(
+                        'descricao') is not None and request.POST.get('precobase') is not None:
+                    Produtos.objects.filter(id=request.POST['id']).update(nome=request.POST['nome'],
+                                                                          descricao=request.POST['descricao'],
+                                                                          precobase=request.POST['precobase'])
+            except Exception as e:
+                print(e)
+
+        if request.POST.get('action') == 'create':
+            try:
+                p = Produtos.objects.create(comercial_id=request.user.id,
+                                            nome=request.POST['nome'],
+                                            descricao=request.POST['descricao'],
+                                            precobase=request.POST['precobase'])
+                p.save()
+            except Exception as e:
+                print(e)
+    return TemplateResponse(request, "produtos.html", context)
 
 
 def register(request):
     if request.method == 'POST':
-        print('request.POST')
-        print(request.POST)
         if request.POST['email'] == '' or request.POST['username'] == '' or request.POST['password'] == '' or '' == \
                 request.POST['group']:
             messages.error(request, "Campos em branco")
@@ -76,7 +102,6 @@ def register(request):
                 messages.error(request, "email já associado a uma conta")
                 return redirect('/register')
             except User.DoesNotExist:
-                print("teste")
                 user = User.objects.create_user(request.POST['username'], request.POST['email'],
                                                 request.POST['password'])
                 group = Group.objects.get(name=request.POST['group'])
