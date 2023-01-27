@@ -81,6 +81,14 @@ DATABASES = {
         'CLIENT': {
             'host': 'mongodb+srv://xpto:1234@xptobd.xijhgun.mongodb.net/xpto?retryWrites=true&w=majority'
         }
+    },
+    'sql': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'HOST': '127.0.0.1',
+        'NAME': 'estgv18748',
+        'USER': 'postgres',
+        'PASSWORD': '1234',
+        'PORT': '5432',
     }
 }
 
