@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "vendas"
 ]
 
 MIDDLEWARE = [
@@ -82,7 +83,7 @@ DATABASES = {
             'host': 'mongodb+srv://xpto:1234@xptobd.xijhgun.mongodb.net/xpto?retryWrites=true&w=majority'
         }
     },
-    'sql': {
+    'vendas_psgl': {
         'ENGINE': 'django.db.backends.postgresql',
         'HOST': '127.0.0.1',
         'NAME': 'estgv18748',
@@ -134,3 +135,5 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
+DATABASE_ROUTERS = ['routers.db_routers.AuthRouter', 'routers.db_routers.Vendas']
+
