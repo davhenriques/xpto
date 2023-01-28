@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, HttpResponse, Http404
 from django.template.response import TemplateResponse
 from djongo.database import IntegrityError, DatabaseError
 from store.models import Produtos
+from django.db.models import Q
 from vendas.models import *
 from django.contrib.auth.models import User, Group
 from django.contrib.auth import authenticate, login, logout
@@ -73,7 +74,7 @@ def produtos(request):
 
                 context['req_prod'] = req_prod
             except:
-                print("No product found with id ={" + req_id+"}")
+                print("No product found with id ={" + req_id + "}")
         return TemplateResponse(request, "produtos.html", context)
     if request.method == 'POST':
         if request.POST.get('action') == 'edit':
@@ -82,8 +83,8 @@ def produtos(request):
                         'descricao') is not None and request.POST.get('precobase') is not None:
                     Produtos.objects.filter(id=request.POST['id']).update(nome=request.POST['nome'],
                                                                           descricao=request.POST['descricao'])
-                    Prod_Stock_Preco.objects.\
-                        filter(prod_id=request.POST['id']).\
+                    Prod_Stock_Preco.objects. \
+                        filter(prod_id=request.POST['id']). \
                         update(preco_base=request.POST['precobase'],
                                stock=request.POST['stock'])
             except Exception as e:
@@ -113,6 +114,30 @@ def produtos(request):
     return TemplateResponse(request, "produtos.html", context)
 
 
+@user_passes_test(lambda u: isAdmin(u))
+def administrarcomerciais(request):
+    coms = User.objects.filter(Q(groups__name='Comercial Administrador') | Q(groups__name='Comercial Supervisor'))
+    context = {"coms": coms}
+    if request.method == 'POST' and request.POST['id'] is not None:
+        if request.POST['action'] == 'delete':
+            try:
+                User.objects.filter(id=request.POST['id']).delete()
+            except Exception as e:
+                print(e)
+        if request.POST['action'] == 'inactivate':
+            try:
+                User.objects.filter(id=request.POST['id']).update(is_active=False)
+            except Exception as e:
+                print(e)
+        if request.POST['action'] == 'activate':
+            try:
+                User.objects.filter(id=request.POST['id']).update(is_active=True)
+            except Exception as e:
+                print(e)
+
+    return TemplateResponse(request, "administrarusers.html", context)
+
+
 def register(request):
     if request.method == 'POST':
         if request.POST['email'] == '' or request.POST['username'] == '' or request.POST['password'] == '' or '' == \
@@ -130,7 +155,8 @@ def register(request):
                 return redirect('/register')
             except User.DoesNotExist:
                 user = User.objects.create_user(request.POST['username'], request.POST['email'],
-                                                request.POST['password'])
+                                                request.POST['password'],
+                                                is_active=True if request.POST['group'] == 'Comprador' else False)
                 group = Group.objects.get(name=request.POST['group'])
                 user.save()
                 group.user_set.add(user)

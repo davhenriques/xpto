@@ -1,3 +1,4 @@
+{% load auth_extras %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -40,12 +41,26 @@
                 </li>
 
             {% endif %}
+            {% if request.user|has_group:"Comprador" %}
                 <li class="nav-item {% block cartactive %} {% endblock cartactive %}">
                     <a class="nav-link" href="/cart">Cart</a>
                 </li>
+            {% endif %}
+            {% if request.user|has_group:"Comercial Administrador" %}
                 <li class="nav-item {% block produtosactive %} {% endblock produtosactive %}">
                     <a class="nav-link" href="/produtos">Produtos</a>
                 </li>
+            {% endif %}
+            {% if request.user|has_group:"Comercial Supervisor" %}
+                <li class="nav-item {% block comerciaisactive %} {% endblock comerciaisactive %}">
+                    <a class="nav-link" href="/comerciais">Comerciais</a>
+                </li>
+            {% endif %}
+            {% if request.user|has_group:"admin" %}
+                <li class="nav-item {% block adminpageactive %} {% endblock adminpageactive %}">
+                    <a class="nav-link" href="/administrarcomerciais">Administrar Comerciais</a>
+                </li>
+            {% endif %}
             </ul>
         </ul>
     </div>
