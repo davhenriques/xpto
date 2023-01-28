@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, HttpResponse, Http404
 from django.template.response import TemplateResponse
 from djongo.database import IntegrityError, DatabaseError
 from store.models import Produtos
+from vendas.models import *
 from django.contrib.auth.models import User, Group
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -51,17 +52,28 @@ def checkout(request):
 
 @user_passes_test(lambda u: isComercial1(u) or isComercial2(u))
 def produtos(request):
-    prods = Produtos.objects.all()
+    _prods = Produtos.objects.all()
+    prods = []
+    i = 0
+    for p in _prods:
+        try:
+            psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
+            print(psp)
+        except Exception as e:
+            print(e)
+        prods.append({'descricao': p.descricao, 'nome': p.nome, 'preco_base': psp.preco_base, 'stock': psp.stock})
+    print(prods)
     context = {"prods": prods}
+    print(context)
     if request.method == 'GET':
         req_id = request.GET.get('id')
         if req_id is not None:
             try:
                 req_prod = Produtos.objects.get(id=req_id)
+
                 context['req_prod'] = req_prod
             except:
-                print("No product found with id=" + req_id)
-
+                print("No product found with id ={" + req_id+"}")
         return TemplateResponse(request, "produtos.html", context)
     if request.method == 'POST':
         if request.POST.get('action') == 'edit':
@@ -69,8 +81,11 @@ def produtos(request):
                 if request.POST.get('nome') is not None and request.POST.get(
                         'descricao') is not None and request.POST.get('precobase') is not None:
                     Produtos.objects.filter(id=request.POST['id']).update(nome=request.POST['nome'],
-                                                                          descricao=request.POST['descricao'],
-                                                                          precobase=request.POST['precobase'])
+                                                                          descricao=request.POST['descricao'])
+                    Prod_Stock_Preco.objects.\
+                        filter(prod_id=request.POST['id']).\
+                        update(preco_base=request.POST['precobase'],
+                               stock=request.POST['stock'])
             except Exception as e:
                 print(e)
 
@@ -78,11 +93,23 @@ def produtos(request):
             try:
                 p = Produtos.objects.create(comercial_id=request.user.id,
                                             nome=request.POST['nome'],
-                                            descricao=request.POST['descricao'],
-                                            precobase=request.POST['precobase'])
+                                            descricao=request.POST['descricao'])
                 p.save()
+                try:
+                    pstockprice = Prod_Stock_Preco.objects.create(prod_id=p.id,
+                                                                  preco_base=request.POST['precobase'],
+                                                                  stock=request.POST['stock'])
+                except:
+                    p.delete()
             except Exception as e:
                 print(e)
+        if request.POST.get('action') == 'delete':
+            if request.POST['id'] is not None:
+                try:
+                    Produtos.objects.get(id=request.POST['id']).delete()
+                    Prod_Stock_Preco.objects.get(prod_id=request.POST['id']).delete()
+                except Exception as e:
+                    print(e)
     return TemplateResponse(request, "produtos.html", context)
 
 

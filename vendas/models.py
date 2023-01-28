@@ -46,3 +46,4 @@ class Promocoes(models.Model):
 class Prod_Stock_Preco(models.Model):
     prod_id = models.IntegerField()
     preco_base = models.DecimalField(decimal_places=2, max_digits=6)
+    stock = models.IntegerField()
