@@ -135,5 +135,5 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
-DATABASE_ROUTERS = ['routers.db_routers.AuthRouter', 'routers.db_routers.Vendas']
+DATABASE_ROUTERS = ['routers.db_routers.AuthRouter', 'routers.db_routers.Store', 'routers.db_routers.Vendas']
 
