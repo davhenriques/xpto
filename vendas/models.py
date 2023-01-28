@@ -5,7 +5,7 @@ class Carrinho(models.Model):
     user_id = models.IntegerField()
     prod_id = models.IntegerField()
     quantidade = models.IntegerField()
-    data = models.DateTimeField()
+    data = models.DateTimeField(auto_now_add=True, blank=True)
 
     def __str__(self):
         return self.nome
@@ -13,7 +13,7 @@ class Carrinho(models.Model):
 
 class Vendas(models.Model):
     user_id = models.IntegerField()
-    data = models.DateTimeField()
+    data = models.DateTimeField(auto_now_add=True, blank=True)
 
     def __str__(self):
         return self.nome
@@ -22,7 +22,7 @@ class Vendas(models.Model):
 class Vendas_Estado(models.Model):
     vendas_id = models.ForeignKey(Vendas, on_delete=models.CASCADE)
     estado = models.IntegerField()
-    data = models.DateTimeField()
+    data = models.DateTimeField(auto_now_add=True, blank=True)
 
 
 class Vendas_Produtos(models.Model):
