@@ -138,3 +138,12 @@ def register(request):
     groups = Group.objects.all()
     context = {"groups": groups}
     return render(request, 'register.html', context)
+
+
+def home(request):
+    return render(request, "homepage.html")
+
+
+def productdetail(request):
+    return render(request, "product-details.html")
+
