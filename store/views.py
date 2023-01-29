@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, HttpResponse, Http404
+from django.core.paginator import Paginator
 from django.template.response import TemplateResponse
 from djongo.database import IntegrityError, DatabaseError
 from store.models import Produtos
@@ -52,7 +53,7 @@ def index(request):
         return TemplateResponse(request, 'index.html', context)
 
 
-@user_passes_test(isComercial1)
+@user_passes_test(isComprador)
 def cart(request):
     return render(request, "cart.html")
 
@@ -180,20 +181,15 @@ def register(request):
 
 
 def home(request):
-    _prods = Produtos.objects.all()
-    prods = []
-    i = 0
-    for p in _prods:
-        try:
-            psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
-            print(psp)
-        except Exception as e:
-            print(e)
-        prods.append({'descricao': p.descricao, 'nome': p.nome, 'preco_base': psp.preco_base, 'stock': psp.stock})
-    print(prods)
-    context = {"prods": prods}
-    print("context: " + str(context))
-    return TemplateResponse(request, "body.html", context)
+    if request.method == 'GET':
+        _prods = Produtos.objects.get_queryset().order_by('id')
+        paginator = Paginator(_prods, 2)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        return render(request, "homepage.html", {'page_obj': page_obj})
+
+
+
 
 
 
