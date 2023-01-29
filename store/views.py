@@ -169,9 +169,20 @@ def register(request):
 
 
 def home(request):
-    return render(request, "homepage.html")
+    _prods = Produtos.objects.all()
+    prods = []
+    i = 0
+    for p in _prods:
+        try:
+            psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
+            print(psp)
+        except Exception as e:
+            print(e)
+        prods.append({'descricao': p.descricao, 'nome': p.nome, 'preco_base': psp.preco_base, 'stock': psp.stock})
+    print(prods)
+    context = {"prods": prods}
+    print("context: " + str(context))
+    return TemplateResponse(request, "body.html", context)
 
 
-def productdetail(request):
-    return render(request, "product-details.html")
 
