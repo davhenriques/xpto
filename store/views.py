@@ -36,7 +36,18 @@ def isComprador(user):
 # views
 def index(request):
     if request.method == 'GET':
-        prods = Produtos.objects.all()
+        _prods = Produtos.objects.all()
+        prods = []
+        i = 0
+        for p in _prods:
+            try:
+                psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
+                prods.append({'id': p.id, 'descricao': p.descricao, 'nome': p.nome, 'preco_base': psp.preco_base,
+                              'stock': psp.stock})
+            except Exception as e:
+                print("except")
+                print(e)
+
         context = {"prods": prods}
         return TemplateResponse(request, 'index.html', context)
 
