@@ -38,7 +38,7 @@ def index(request):
     if request.method == 'GET':
         prods = Produtos.objects.all()
         context = {"prods": prods}
-        return TemplateResponse(request, "index.html", context)
+        return TemplateResponse(request, 'index.html', context)
 
 
 @user_passes_test(isComercial1)
@@ -59,22 +59,24 @@ def produtos(request):
     for p in _prods:
         try:
             psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
-            print(psp)
+            prods.append({'id': p.id, 'descricao': p.descricao, 'nome': p.nome, 'preco_base': psp.preco_base, 'stock': psp.stock})
         except Exception as e:
+            print("except")
             print(e)
-        prods.append({'descricao': p.descricao, 'nome': p.nome, 'preco_base': psp.preco_base, 'stock': psp.stock})
-    print(prods)
+
     context = {"prods": prods}
-    print(context)
     if request.method == 'GET':
         req_id = request.GET.get('id')
         if req_id is not None:
             try:
                 req_prod = Produtos.objects.get(id=req_id)
-
-                context['req_prod'] = req_prod
+                req_prod_ar = []
+                req_psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
+                req_prod_ar.append({'id': req_prod.id, 'descricao': req_prod.descricao, 'nome': req_prod.nome, 'preco_base': req_psp.preco_base, 'stock': req_psp.stock})
+                context['req_prod'] = req_prod_ar
             except:
                 print("No product found with id ={" + req_id + "}")
+            print(context)
         return TemplateResponse(request, "produtos.html", context)
     if request.method == 'POST':
         if request.POST.get('action') == 'edit':
