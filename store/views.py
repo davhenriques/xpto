@@ -36,27 +36,29 @@ def isComprador(user):
 
 # views
 def index(request):
-    #if request.method == 'GET':
-    #   _prods = Produtos.objects.all()
-    #   prods = []
-    #   i = 0
-    #   for p in _prods:
-    #       try:
-    #           psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
-    #           prods.append({'id': p.id, 'descricao': p.descricao, 'nome': p.nome, 'preco_base': psp.preco_base,
-    #                         'stock': psp.stock})
-    #       except Exception as e:
-    #           print("except")
-    #           print(e)
-
-    #   context = {"prods": prods}
-    #   return TemplateResponse(request, 'index.html', context)
+    _prods = Produtos.objects.get_queryset().order_by('id')
+    prods = []
+    for p in _prods:
+        try:
+            psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
+            prods.append({'id': p.id, 'descricao': p.descricao, 'nome': p.nome, 'preco_base': psp.preco_base,
+                          'stock': psp.stock})
+        except Exception as e:
+            print("except")
+            print(e)
+    paginator = Paginator(prods, 4)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {'page_obj': page_obj}
     if request.method == 'GET':
-        _prods = Produtos.objects.get_queryset().order_by('id')
-        paginator = Paginator(_prods, 4)
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-        return render(request, "index.html", {'page_obj': page_obj})
+        return render(request, "index.html", context)
+    if request.method == 'POST':
+        try:
+            carrinho = Carrinho.objects.create(user_id=request.user.id, prod_id=request.POST['id'], quantidade=1)
+            carrinho.save()
+        except Exception as e:
+            print(e)
+        return render(request, "index.html", context)
 
 
 @user_passes_test(isComprador)

@@ -4,27 +4,60 @@
     {% load static %}
     {% load auth_extras %}
     {% if not user.is_authenticated or request.user|has_group:"Comprador" %}
+        {% block css %}
+            <style>
+                .card {
+                    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+                    max-width: 300px;
+                    margin: auto;
+                    text-align: center;
+                    font-family: arial;
+                }
 
-    <!-- ======= Hero Section ======= -->
-    <section id="hero" class="d-flex align-items-center">
+                .price {
+                    color: grey;
+                    font-size: 22px;
+                }
 
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-6 pt-5 pt-lg-0 order-2 order-lg-1 d-flex flex-column justify-content-center">
-          <h1 data-aos="fade-up">Welcome to Xpto</h1>
-            {% if not user.is_authenticated %}
-              <h2 data-aos="fade-up" data-aos-delay="400">Join the thousand registered users as a new client or become one of our sellers!</h2>
-              <div data-aos="fade-up" data-aos-delay="800">
-                <a href="/registo" class="btn-get-started">Registo</a>
-              </div>
-            {% endif %}
-        </div>
-        <div class="col-lg-4 order-1 order-lg-2 hero-img" data-aos="fade-left" data-aos-delay="200">
-          <img src="{% static 'assets/img/cart-img.png' %}" class="img-fluid animated" alt="">
-        </div>
-      </div>
-    </div>
-    </section><!-- End Hero -->
+                .card button {
+                    border: none;
+                    outline: 0;
+                    padding: 12px;
+                    color: white;
+                    background-color: #000;
+                    text-align: center;
+                    cursor: pointer;
+                    width: 100%;
+                    font-size: 18px;
+                }
+
+                .card button:hover {
+                    opacity: 0.7;
+                }
+            </style>
+        {% endblock %}
+
+        <!-- ======= Hero Section ======= -->
+        <section id="hero" class="d-flex align-items-center">
+
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-6 pt-5 pt-lg-0 order-2 order-lg-1 d-flex flex-column justify-content-center">
+                        <h1 data-aos="fade-up">Welcome to Xpto</h1>
+                        {% if not user.is_authenticated %}
+                            <h2 data-aos="fade-up" data-aos-delay="400">Join the thousand registered users as a new
+                                client or become one of our sellers!</h2>
+                            <div data-aos="fade-up" data-aos-delay="800">
+                                <a href="/registo" class="btn-get-started">Registo</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-lg-4 order-1 order-lg-2 hero-img" data-aos="fade-left" data-aos-delay="200">
+                        <img src="{% static 'assets/img/cart-img.png' %}" class="img-fluid animated" alt="">
+                    </div>
+                </div>
+            </div>
+        </section><!-- End Hero -->
     {% endif %}
 
     <!-- ======= Product Section ======= -->
@@ -49,29 +82,31 @@
             <div class="row portfolio-container">
                 {% for prod in page_obj %}
 
-                <div class="col-lg-4 col-md-6 portfolio-item" >
-                    <div class="portfolio-wrap">
-                        <img src="{% static 'assets/img/portfolio/portfolio-1.jpg' %}" class="img-fluid" alt="">
-                        <div class="portfolio-info">
-                            <h4>{{ prod.nome }}</h4>
-                            <p>{{ prod.descricao }}</p>
-                            <p>App</p>
-                            <div class="portfolio-links">
-                                <a href="{% static 'assets/img/portfolio/portfolio-1.jpg' %}"
-                                   data-gallery="portfolioGallery" class="portfolio-lightbox" title="App 1"><i
-                                        class="bx bx-plus"></i></a>
-                                <a href="portfolio-details.html" title="More Details"><i class="bx bx-link"></i></a>
+                    <div class="col-lg-4 col-md-6 portfolio-item">
+
+                        <div class="">
+                            <div class="card">
+                                <img src="https://www.w3schools.com/w3images/jeans3.jpg" alt="Denim Jeans"
+                                     style="width:100%">
+                                <h1>{{ prod.nome }}</h1>
+                                <p class="price">{{ prod.preco_base }}€</p>
+                                <p>{{ prod.descricao }}</p>
+                                <p>
+                                <form action="/" method="post"> {% csrf_token %}
+                                    <input type="hidden" name="id" value="{{ prod.id }}">
+                                    <button type="submit">Adicionar ao Carrinho</button>
+                                </form>
+                                </p>
                             </div>
                         </div>
                     </div>
-                </div>
                 {% endfor %}
 
             </div>
 
-        <div class="container">
-            <div class="row">
-                <div class="pagination" style="display: flex; justify-content: center">
+            <div class="container">
+                <div class="row">
+                    <div class="pagination" style="display: flex; justify-content: center">
                     <span class="step-links">
                         {% if page_obj.has_previous %}
                             <a href="?page=1">&laquo; first</a>
@@ -87,10 +122,58 @@
                             <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
                         {% endif %}
                     </span>
+                    </div>
                 </div>
             </div>
         </div>
-        </div>
     </section><!-- End Portfolio Section -->
+    {% block proddetails %}
+        {% for rp in req_prod %}
+
+            <div class="modal fade" id="ProdDetails" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            {#                            {% debug %}#}
+                            <h5 class="modal-title" id="exampleModalLabel">{{ rp.nome }}</h5>
+
+                            <a href="/">
+                                <span aria-hidden="true">&times;</span>
+                            </a>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group row">
+                                <p>Descrição:</p>
+                            </div>
+                            <div class="form-group row">
+                                <p>{{ rp.descricao }}</p>
+                            </div>
+
+                            {#                            <form action="/" method="post"> {% csrf_token %}#}
+                            {#                            </form>#}
+                        </div>
+                        {#<div class="modal-footer">#}
+                        {#<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>#}
+                        {#</div>#}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endblock %}
+{% endblock %}
+{% block js %}
+    <script>
+
+        //shortcut for $(document).ready
+        $(function () {
+            if (window.location.hash) {
+
+                var hash = window.location.hash;
+                $(hash).modal('toggle');
+                window.history.pushState("object or string", "Title", "/");
+            }
+        });
+    </script>
 {% endblock %}
 

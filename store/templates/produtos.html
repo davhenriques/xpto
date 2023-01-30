@@ -68,7 +68,7 @@
 
         </div>
     </section>
-    <section>
+{#    <section>#}
     <!-- Modal -->
     {% block editprod %}
         {% if req_prod %}
@@ -77,10 +77,11 @@
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
+{#                            {% debug %}#}
                             <h5 class="modal-title" id="exampleModalLabel">Editar produto #{{ req_prod.id }}</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <a href="{% url 'produtos' %}">
                                 <span aria-hidden="true">&times;</span>
-                            </button>
+                            </a>
                         </div>
                         <div class="modal-body">
                             <form action="{% url 'produtos' %}" method="post"> {% csrf_token %}
@@ -130,7 +131,7 @@
             </div>
         {% endif %}
     {% endblock %}
-    </section>
+{#    </section>#}
     <section>
     <!-- Modal Create -->
     {% block createprod %}
