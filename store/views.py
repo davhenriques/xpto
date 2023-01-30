@@ -63,7 +63,27 @@ def index(request):
 
 @user_passes_test(isComprador)
 def cart(request):
-    return render(request, "cart.html")
+    if request.method == 'POST':
+        if 'id' in request.POST:
+            if request.POST['action'] == 'alterar_quantidade':
+                print(request.POST)
+                try:
+                   cart = Carrinho.objects.get(id=request.POST['id'])
+                   cart.quantidade = request.POST['quantidade']
+                   cart.save()
+                except Exception as e:
+                    print("error")
+                    print(e)
+            if request.POST['action'] == 'alterar_quantidade':
+                print("teste")
+    _cart = Carrinho_Preco.objects.filter(user_id=request.user.id)
+    cart = []
+    for item in _cart:
+        p = Produtos.objects.get(id=item.prod_id)
+        cart.append({'cart': item, 'produto': p})
+    context = {'cart': cart}
+    print(cart[0]['cart'])
+    return render(request, "cart.html", context)
 
 
 @user_passes_test(isComprador)

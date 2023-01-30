@@ -36,7 +36,7 @@ class Vendas_Produtos(models.Model):
 
 class Promocoes(models.Model):
     prod_id = models.IntegerField()
-    percentagem = models.IntegerField()
+    percentagem = models.DecimalField(decimal_places=2, max_digits=5)
     data_exp = models.DateTimeField()
 
     def __str__(self):
@@ -47,3 +47,18 @@ class Prod_Stock_Preco(models.Model):
     prod_id = models.IntegerField()
     preco_base = models.DecimalField(decimal_places=2, max_digits=6)
     stock = models.IntegerField()
+
+
+class Carrinho_Preco(models.Model):
+    id = models.BigIntegerField(primary_key=True)
+    prod_id = models.IntegerField()
+    user_id = models.IntegerField()
+    preco_base = models.DecimalField(decimal_places=2, max_digits=6)
+    quantidade = models.IntegerField()
+    promotion = models.DecimalField(decimal_places=2, max_digits=6)
+    preco_final = models.DecimalField(decimal_places=2, max_digits=6)
+
+    class Meta:
+        managed = False
+        db_table = 'vendas_carrinho_preco'
+
