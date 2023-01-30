@@ -186,6 +186,16 @@ def register(request):
     return render(request, 'register.html', context)
 
 
+@login_required(login_url="/accounts/login/")
+def settings(request):
+    return render(request, 'settings.html')
+
+
+@user_passes_test(isComprador)
+def logs(request):
+    return render(request, 'logs.html')
+
+
 #def home(request):
 #   if request.method == 'GET':
 #       _prods = Produtos.objects.get_queryset().order_by('id')

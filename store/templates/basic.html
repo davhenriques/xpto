@@ -38,7 +38,7 @@
 <body>
 
 <!-- ======= Header ======= -->
-<header id="header" class="fixed-top d-flex align-items-center">
+<header id="header" class="fixed-top d-flex align-items-center" style="border-bottom: solid;">
     <div class="container d-flex align-items-center justify-content-between">
 
         <!-- Navbar left side Logo -->
@@ -54,7 +54,7 @@
                     <li class="dropdown"><a href="#"><span>{{ request.user }}</span> <i class="bi bi-chevron-down"></i></a>
                       <ul>
                         {% if request.user|has_group:"Comprador" %}
-                            <li><a class="nav-link" href="#">Registo de Compras</a></li>
+                            <li><a class="nav-link" href="/logs">Registo de Compras</a></li>
                         {% endif %}
                         {% if request.user|has_group:"Comercial Administrador" %}
                             <li><a class="nav-link {% block produtosactive %} {% endblock produtosactive %}" href="/produtos">Produtos</a></li>
@@ -65,6 +65,7 @@
                         {% if request.user|has_group:"admin" %}
                             <li><a class="nav-link {% block adminpageactive %} {% endblock adminpageactive %}" href="/administrarcomerciais">Administrar Comerciais</a></li>
                         {% endif %}
+                        <li><a href="/settings">Editar Perfil</a></li>
                         <li><a href="{% url 'logout' %}">Logout</a></li>
                       </ul>
                     </li>
@@ -88,17 +89,6 @@
 
 <!--End #main -->
 
-<!-- ======= Footer ======= -->
-  <footer id="footer">
-    <div class="container">
-      <div class="row d-flex align-items-center">
-        <div class="col-lg-14 text-lg-left text-center">
-          <br>
-          {% block footer %} {% endblock %}
-        </div>
-      </div>
-    </div>
-  </footer><!-- End Footer -->
 
 <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
