@@ -60,6 +60,44 @@
         </section><!-- End Hero -->
     {% endif %}
 
+    <!-- ======= Recomendacoes Section ======= -->
+    <section id="recomendations" class="team">
+        <div class="container">
+
+            <div class="section-title">
+                <h2>Recomendações</h2>
+            </div>
+
+            <div class="row portfolio-container">
+                {% for prod in page_obj %}
+                    {% if forloop.counter < 5 %}
+                    <div class="col-lg-3 col-md-3 portfolio-item">
+
+                        <div class="">
+                            <div class="card">
+                                <img src="https://www.w3schools.com/w3images/jeans3.jpg" alt="Denim Jeans"
+                                     style="width:100%">
+                                <h1>{{ prod.nome }}</h1>
+                                <p class="price">{{ prod.preco_base }}€</p>
+                                <p>{{ prod.descricao }}</p>
+                                <p>
+                                <form action="/" method="post"> {% csrf_token %}
+                                    <input type="hidden" name="id" value="{{ prod.id }}">
+                                    <button type="submit">Adicionar ao Carrinho</button>
+                                </form>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+
+            </div>
+        </div>
+    </section>
+
+    <!-- End Recomendacoes Section -->
+
     <!-- ======= Product Section ======= -->
     <section id="shop" class="portfolio">
         <div class="container">

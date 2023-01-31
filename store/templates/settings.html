@@ -2,6 +2,7 @@
 {% block title %} Editar Perfil {% endblock %}
 
 {% block body %}
+{% load auth_extras %}
     {% if user.is_authenticated %}
     <section id="hero" class="d-flex">
         <div class="container">
@@ -10,124 +11,50 @@
                 <hr class="my-2">
             </div>
             <div class="row my-2">
-                <a href="#"><button type="button" class="btn btn-primary" data-dismiss="modal">Mudar Nome</button></a>
+                <a href="/settings?action=create#EditName"><button type="button" class="btn btn-primary" data-dismiss="modal">Mudar Nome</button></a>
             </div>
             <div class="row">
-                <a href="#"><button type="button" class="btn btn-primary" data-dismiss="modal">Mudar Password</button></a>
+                <a href="/settings?action=create#EditPassword"><button type="button" class="btn btn-primary" data-dismiss="modal">Mudar Password</button></a>
             </div>
+            {% if request.user|has_group:"admin" %}
+            <div class="row my-2">
+                <a href="/settings?action=create#Extrair"><button type="button" class="btn btn-primary" data-dismiss="modal">Extrair Dados</button></a>
+            </div>
+            {% endif %}
         </div>
     </section>
-    <!--<section>
-    &lt;!&ndash; Modal &ndash;&gt;
-    {% block editprod %}
-        {% if req_prod %}
-            <div class="modal fade" id="EditProd" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-                 aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">Editar produto #{{ req_prod.id }}</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <form action="{% url 'produtos' %}" method="post"> {% csrf_token %}
-                                <input type="hidden" name="id" value="{{ req_prod.id }}">
-                                <input type="hidden" name="action" value="edit">
-                                <div class="form-group row">
-                                    <label for="nome" class="col-sm-2 col-form-label">Nome</label>
-                                    <div class="col-sm-10">
-                                        <input type="text" class="form-control" name="nome" id="nome"
-                                               placeholder="Nome" value="{{ req_prod.nome }}" required>
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label for="descricao" class="col-sm-2 col-form-label">Descrição</label>
-                                    <div class="col-sm-10">
-                                        <textarea id="descricao" name="descricao" rows="4" cols="50"
-                                                  required>{{ req_prod.descricao }}</textarea>
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label for="precobase" class="col-sm-2 col-form-label">Preço base</label>
-                                    <div class="col-sm-10">
-                                        <input type="number" step="0.01" name="precobase" class="form-control"
-                                               id="precobase"
-                                               placeholder="{{ req.prod }}" value="{{ req_prod.precobase }}" required>
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label for="stock" class="col-sm-2 col-form-label">Quantidade</label>
-                                    <div class="col-sm-10">
-                                        <input type="number" class="form-control" name="stock" id="stock"
-                                               placeholder="1" value="{{ req_prod.precobase }}" required>
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <div class="col-sm-10">
-                                        <button type="submit" class="btn btn-primary">Gravar</button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                        {#<div class="modal-footer">#}
-                        {#<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>#}
-                        {#</div>#}
-                    </div>
-                </div>
-            </div>
-        {% endif %}
-    {% endblock %}
-    </section>
     <section>
-    &lt;!&ndash; Modal Create &ndash;&gt;
-    {% block createprod %}
-        <div class="modal fade" id="CreateProd" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-             aria-hidden="true">
+    <!-- Modal Editar Nome -->
+    {% block alterarnome %}
+        <div class="modal fade" id="EditName" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Adicionar produto</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <h5 class="modal-title" id="label_name">Alterar Nome</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onClick="$('#EditName').modal('hide')">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form action="{% url 'produtos' %}" method="post"> {% csrf_token %}
+                        <form action="{% url 'settings' %}" method="put"> {% csrf_token %}
                             <input type="hidden" name="action" value="create">
                             <div class="form-group row">
-                                <label for="nome" class="col-sm-2 col-form-label">Nome</label>
+                                <label for="nome" class="col-sm-3 col-form-label">Novo Nome</label>
                                 <div class="col-sm-10">
                                     <input type="text" class="form-control" name="nome" id="nome"
-                                           placeholder="Nome" value="" required>
+                                           placeholder="Nome" value="">
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label for="descricao" class="col-sm-2 col-form-label">Descrição</label>
+                                <label for="sobrenome" class="col-sm-4 col-form-label">Sobrenome</label>
                                 <div class="col-sm-10">
-                                        <textarea id="descricao" class="form-control" name="descricao"
-                                                  rows="4" cols="50"
-                                                  placeholder="Descrição" required></textarea>
+                                        <input type="text" id="sobrenome" class="form-control" name="sobrenome"
+                                                  placeholder="Sobrenome">
                                 </div>
                             </div>
-                            <div class="form-group row">
-                                <label for="precobase" class="col-sm-2 col-form-label">Preço base</label>
+                            <div class="form-group row my-2">
                                 <div class="col-sm-10">
-                                    <input type="number" class="form-control" name="precobase" id="precobase"
-                                           placeholder="1.00" value="{{ req_prod.precobase }}" required>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label for="stock" class="col-sm-2 col-form-label">Quantidade</label>
-                                <div class="col-sm-10">
-                                    <input type="number" class="form-control" name="stock" id="stock"
-                                           placeholder="1" value="{{ req_prod.precobase }}" required>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <div class="col-sm-10">
-                                    <button type="submit" class="btn btn-primary">Gravar</button>
+                                    <button type="submit" class="btn btn-primary">Mudar</button>
                                 </div>
                             </div>
                         </form>
@@ -136,8 +63,89 @@
             </div>
         </div>
     {% endblock %}
-    </section>-->
-        {% endif %}
+    </section>
+
+    <section>
+    <!-- Modal Editar Password -->
+    {% block alterarpassword %}
+        <div class="modal fade" id="EditPassword" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="label_password">Alterar Password</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onClick="$('#EditPassword').modal('hide')">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{% url 'settings' %}" method="put"> {% csrf_token %}
+                            <input type="hidden" name="action" value="create">
+                            <div class="form-group row">
+                                <label for="nome" class="col-sm-4 col-form-label">Password Atual</label>
+                                <div class="col-sm-10">
+                                    <input type="password" class="form-control" name="Password" id="Password-atual"
+                                           placeholder="******" value="">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="sobrenome" class="col-sm-4 col-form-label">Nova Password</label>
+                                <div class="col-sm-10">
+                                        <input type="password" class="form-control" name="Password" id="Password-nova"
+                                           placeholder="******" value="">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="nome" class="col-sm-6 col-form-label">Confirmar Nova Password</label>
+                                <div class="col-sm-10">
+                                    <input type="password" class="form-control" name="Password" id="Password-confimar"
+                                           placeholder="******" value="">
+                                </div>
+                            </div>
+                            <div class="form-group row my-2">
+                                <div class="col-sm-10">
+                                    <button type="submit" class="btn btn-primary">Mudar</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endblock %}
+    </section>
+
+    <section>
+    <!-- Modal Extrair -->
+    {% block extrair %}
+        <div class="modal fade" id="Extrair" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="label_extrair">Formato da extração</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onClick="$('#Extrair').modal('hide')">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{% url 'settings' %}" method="put"> {% csrf_token %}
+                            <input type="hidden" name="action" value="create">
+                            <div class="form-group row my-2">
+                                <div class="col-sm-10">
+                                    <button type="submit" class="btn btn-primary">Json</button>
+                                    <span>&nbsp;&nbsp;</span>
+                                    <button type="submit" class="btn btn-primary">XML</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endblock %}
+    </section>
+
+
+    {% endif %}
 {% endblock %}
 
 {% block js %}
@@ -150,7 +158,7 @@
                 var hash = window.location.hash;
                 $(hash).modal('toggle');
                 console.log(hash);
-                window.history.pushState("object or string", "Title", "/produtos");
+                window.history.pushState("object or string", "Title", "/settings");
             }
         });
     </script>

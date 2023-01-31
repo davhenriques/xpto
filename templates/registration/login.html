@@ -4,7 +4,6 @@
 {% block body %}
 <section id="hero" class="d-flex">
     <div class="container my-4" style="border: solid; border-color: #3498db;">
-    <br>
     {% for message in messages %}
         <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
             <strong>Message : </strong> {{ message }}
@@ -13,8 +12,8 @@
             </button>
         </div>
     {% endfor %}
-    <div class="row" style="text-align: center;">
-        <h1>Log In</h1>
+    <div class="container" style="text-align: center;">
+        <div class="row my-4"><h1>Log In</h1></div>
             <form action="{% url 'login' %}" method="post"> {% csrf_token %}
                 <div class="form-group" style="padding: 2px;">
                     <input type="text" name="username" placeholder="Username"/>
