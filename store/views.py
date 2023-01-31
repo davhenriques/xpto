@@ -11,6 +11,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from decimal import Decimal
 from django.db import connections
+from django.core.files.storage import FileSystemStorage
+import uuid
 
 
 # tests
@@ -43,7 +45,7 @@ def index(request):
         try:
             psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
             prods.append({'id': p.id, 'descricao': p.descricao, 'nome': p.nome, 'preco_base': psp.preco_base,
-                          'stock': psp.stock})
+                          'stock': psp.stock, 'img_url': p.img_url, 'tipo': p.tipo})
         except Exception as e:
             print("except")
             print(e)
@@ -122,10 +124,16 @@ def produtos(request):
                 print(e)
 
         if request.POST.get('action') == 'create':
+            myfile = request.FILES['img_url']
+            fs = FileSystemStorage()
+            filename = fs.save(str(uuid.uuid4())+".png", myfile)
+            uploaded_file_url = fs.url(filename)
             try:
                 p = Produtos.objects.create(comercial_id=request.user.id,
                                             nome=request.POST['nome'],
-                                            descricao=request.POST['descricao'])
+                                            descricao=request.POST['descricao'],
+                                            tipo=request.POST['tipo'],
+                                            img_url=uploaded_file_url)
                 p.save()
                 try:
                     pstockprice = Prod_Stock_Preco.objects.create(prod_id=p.id,

@@ -152,13 +152,30 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form action="{% url 'produtos' %}" method="post"> {% csrf_token %}
+                        <form action="{% url 'produtos' %}" method="post" enctype="multipart/form-data"> {% csrf_token %}
                             <input type="hidden" name="action" value="create">
                             <div class="form-group row">
                                 <label for="nome" class="col-sm-2 col-form-label">Nome</label>
                                 <div class="col-sm-10">
                                     <input type="text" class="form-control" name="nome" id="nome"
                                            placeholder="Nome" value="" required>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tipo" class="col-sm-2 col-form-label">Tipo</label>
+                                <div class="col-sm-10">
+                                    <select name="tipo" id="tipo">
+                                        <option value="informatica">Informática</option>
+                                        <option value="eletro-domestico">Eletro-doméstico</option>
+                                        <option value="vestuario">Vestuario</option>
+                                        <option value="bricolage">Bricolage</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="img_url" class="col-sm-2 col-form-label">Tipo</label>
+                                <div class="col-sm-10">
+                                    <input type="file" name="img_url" id="img_url">
                                 </div>
                             </div>
                             <div class="form-group row">

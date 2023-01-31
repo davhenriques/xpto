@@ -19,7 +19,7 @@
             </button>
         </div>
     {% endfor %}
-        <form action="/cart" method="post"> {% csrf_token %}
+        <form action="/cart" method="post" > {% csrf_token %}
             <input type="hidden" name="action" value="finalizar_compra">
             <button type="submit" style="    float: right;
     background-color: #3598db;
