@@ -47,7 +47,7 @@ def index(request):
         except Exception as e:
             print("except")
             print(e)
-    paginator = Paginator(prods, 4)
+    paginator = Paginator(prods, 24)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {'page_obj': page_obj}
