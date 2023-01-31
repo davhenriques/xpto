@@ -10,6 +10,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from decimal import Decimal
+from django.db import connections
 
 
 # tests
@@ -66,23 +67,36 @@ def cart(request):
     if request.method == 'POST':
         if 'id' in request.POST:
             if request.POST['action'] == 'alterar_quantidade':
-                print(request.POST)
                 try:
                    cart = Carrinho.objects.get(id=request.POST['id'])
                    cart.quantidade = request.POST['quantidade']
                    cart.save()
                 except Exception as e:
-                    print("error")
+                    messages.error(request, "quantidade selecionada excede limite")
                     print(e)
-            if request.POST['action'] == 'alterar_quantidade':
-                print("teste")
+                print('sucesso a alterar a quantiade')
+            if request.POST['action'] == 'delete':
+                try:
+                    cart = Carrinho.objects.get(id=request.POST['id'])
+                    cart.delete()
+                except Exception as e:
+                    print(e)
+        if request.POST['action'] == 'finalizar_compra':
+            print("finalizar_compra")
+            try:
+                print("finalizar_compra")
+                cursor = connections['vendas_psgl'].cursor()
+                cursor.execute("CALL finalizarcompra(%s);", [request.user.id])
+                redirect('/logs')
+            except Exception as e:
+                print("deu erro!")
+                print(e)
     _cart = Carrinho_Preco.objects.filter(user_id=request.user.id)
     cart = []
     for item in _cart:
         p = Produtos.objects.get(id=item.prod_id)
         cart.append({'cart': item, 'produto': p})
     context = {'cart': cart}
-    print(cart[0]['cart'])
     return render(request, "cart.html", context)
 
 
@@ -93,31 +107,6 @@ def checkout(request):
 
 @user_passes_test(lambda u: isComercial1(u) or isComercial2(u))
 def produtos(request):
-    _prods = Produtos.objects.all()
-    prods = []
-    i = 0
-    for p in _prods:
-        try:
-            psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
-            prods.append({'id': p.id, 'descricao': p.descricao, 'nome': p.nome, 'preco_base': psp.preco_base, 'stock': psp.stock})
-        except Exception as e:
-            print("except")
-            print(e)
-
-    context = {"prods": prods}
-    if request.method == 'GET':
-        req_id = request.GET.get('id')
-        if req_id is not None:
-            try:
-                req_prod = Produtos.objects.get(id=req_id)
-                req_prod_ar = []
-                req_psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
-                req_prod_ar.append({'id': req_prod.id, 'descricao': req_prod.descricao, 'nome': req_prod.nome, 'preco_base': req_psp.preco_base, 'stock': req_psp.stock})
-                context['req_prod'] = req_prod_ar
-            except:
-                print("No product found with id ={" + req_id + "}")
-            print(context)
-        return TemplateResponse(request, "produtos.html", context)
     if request.method == 'POST':
         if request.POST.get('action') == 'edit':
             try:
@@ -151,8 +140,35 @@ def produtos(request):
                 try:
                     Produtos.objects.get(id=request.POST['id']).delete()
                     Prod_Stock_Preco.objects.get(prod_id=request.POST['id']).delete()
+                    Carrinho.objects.get(prod_id=request.POST['id']).delete()
                 except Exception as e:
                     print(e)
+    _prods = Produtos.objects.all()
+    prods = []
+    i = 0
+    for p in _prods:
+        try:
+            psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
+            prods.append({'id': p.id, 'descricao': p.descricao, 'nome': p.nome, 'preco_base': psp.preco_base, 'stock': psp.stock})
+        except Exception as e:
+            print("except")
+            print(e)
+
+    context = {"prods": prods}
+    if request.method == 'GET':
+        req_id = request.GET.get('id')
+        if req_id is not None:
+            try:
+                req_prod = Produtos.objects.get(id=req_id)
+                req_prod_ar = []
+                req_psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
+                req_prod_ar.append({'id': req_prod.id, 'descricao': req_prod.descricao, 'nome': req_prod.nome, 'preco_base': req_psp.preco_base, 'stock': req_psp.stock})
+                context['req_prod'] = req_prod_ar
+            except:
+                print("No product found with id ={" + req_id + "}")
+            print(context)
+        return TemplateResponse(request, "produtos.html", context)
+
     return TemplateResponse(request, "produtos.html", context)
 
 
@@ -215,7 +231,10 @@ def settings(request):
 
 @user_passes_test(isComprador)
 def logs(request):
-    return render(request, 'logs.html')
+    vendas = Vendas.objects.raw("Select * from vendas_vendas as v inner join vendas_vendas_estado as ve on v.id = ve.vendas_id_id where user_id=" + str(request.user.id) + " order by ve.data desc")
+    print(vendas)
+    context = {'vendas': vendas}
+    return render(request, 'logs.html', context)
 
 
 #def home(request):

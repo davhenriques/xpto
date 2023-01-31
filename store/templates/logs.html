@@ -1,5 +1,5 @@
 {% extends 'basic.html' %}
-{% block title %} Editar Perfil {% endblock %}
+{% block title %} Compras {% endblock %}
 
 {% block body %}
 
@@ -13,49 +13,21 @@
 
                 <thead>
                 <tr>
-                    <th>#</th>
-                    <th>...</th>
-                    <th>...</th>
-                    <th>...</th>
+                    <th>Id Compra</th>
+                    <th>Data</th>
+                    <th>Estado</th>
                 </tr>
                 </thead>
 
-                <!--<tbody>
-                {% for com in coms %}
+                <tbody>
+                {% for ven in vendas %}
                     <tr>
-                        <th scope="row">{{ com.id }}</th>
-
-                        <td>{{ com.username }}</td>
-                        <td>{{ com.email }}</td>
-                        <td>{{ com.date_joined }}</td>
-                        <td>{{ com.groups.all.0.name }}</td>
-                        <td style="display: flex; justify-content: space-around">
-                            {% if com.is_active is False %}
-                            <form method="post"> {% csrf_token %}
-                                <input type="hidden" name="id" value="{{ com.id }}">
-                                <input type="hidden" name="action" value="activate">
-
-                                <button type="submit" class="btn btn-primary">Aceitar</button>
-                            </form>
-                            {% else %}
-                                <form method="post"> {% csrf_token %}
-                                    <input type="hidden" name="id" value="{{ com.id }}">
-                                    <input type="hidden" name="action" value="inactivate">
-
-                                    <button type="submit" class="btn btn-secondary">Inativar</button>
-                                </form>
-                            {% endif %}
-
-                            <form method="post"> {% csrf_token %}
-                                <input type="hidden" name="id" value="{{ com.id }}">
-                                <input type="hidden" name="action" value="delete">
-
-                                <button type="submit" class="btn btn-danger">Apagar</button>
-                            </form>
-                        </td>
+                        <td>{{ ven.vendas_id_id }}</td>
+                        <td>{{ ven.data }}</td>
+                        <td>{{ ven.estado }}</td>
                     </tr>
                 {% endfor %}
-                </tbody>-->
+                </tbody>
 
             </table>
         </div>

@@ -1,6 +1,13 @@
 {% extends 'basic.html' %}
 {% block title %} Produtos {% endblock %}
+{% block css %}
 
+    <style>
+        .modal-content{
+            width: 45vw;
+        }
+    </style>
+{% endblock %}
 {% block body %}
     <section id="hero" class="d-flex align-items-center">
         <div class="container my-4">
@@ -20,7 +27,7 @@
                         <th>Nome</th>
                         <th>Descrição</th>
                         <th>Preço base</th>
-                        <th>Preço base</th>
+                        <th>Quantidade</th>
                         <th>Ações</th>
                     </tr>
                     </thead>
@@ -71,34 +78,34 @@
 {#    <section>#}
     <!-- Modal -->
     {% block editprod %}
-        {% if req_prod %}
+        {% for rp in req_prod %}
             <div class="modal fade" id="EditProd" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
                  aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
 {#                            {% debug %}#}
-                            <h5 class="modal-title" id="exampleModalLabel">Editar produto #{{ req_prod.id }}</h5>
+                            <h5 class="modal-title" id="exampleModalLabel">Editar produto #{{ rp.id }}</h5>
                             <a href="{% url 'produtos' %}">
                                 <span aria-hidden="true">&times;</span>
                             </a>
                         </div>
                         <div class="modal-body">
                             <form action="{% url 'produtos' %}" method="post"> {% csrf_token %}
-                                <input type="hidden" name="id" value="{{ req_prod.id }}">
+                                <input type="hidden" name="id" value="{{ rp.id }}">
                                 <input type="hidden" name="action" value="edit">
                                 <div class="form-group row">
                                     <label for="nome" class="col-sm-2 col-form-label">Nome</label>
                                     <div class="col-sm-10">
                                         <input type="text" class="form-control" name="nome" id="nome"
-                                               placeholder="Nome" value="{{ req_prod.nome }}" required>
+                                               placeholder="Nome" value="{{ rp.nome }}" required>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label for="descricao" class="col-sm-2 col-form-label">Descrição</label>
                                     <div class="col-sm-10">
-                                        <textarea id="descricao" name="descricao" rows="4" cols="50"
-                                                  required>{{ req_prod.descricao }}</textarea>
+                                        <textarea id="descricao" class="form-control"  name="descricao" rows="4" cols="50"
+                                                  required>{{ rp.descricao }}</textarea>
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -106,14 +113,14 @@
                                     <div class="col-sm-10">
                                         <input type="number" step="0.01" name="precobase" class="form-control"
                                                id="precobase"
-                                               placeholder="{{ req.prod }}" value="{{ req_prod.precobase }}" required>
+                                               placeholder="{{ rp.preco_base }}" value="{{ rp.preco_base }}" required>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label for="stock" class="col-sm-2 col-form-label">Quantidade</label>
                                     <div class="col-sm-10">
                                         <input type="number" class="form-control" name="stock" id="stock"
-                                               placeholder="1" value="{{ req_prod.precobase }}" required>
+                                               placeholder="1" value="{{ rp.stock }}" required>
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -129,10 +136,10 @@
                     </div>
                 </div>
             </div>
-        {% endif %}
+        {% endfor %}
     {% endblock %}
 {#    </section>#}
-    <section>
+{#    <section>#}
     <!-- Modal Create -->
     {% block createprod %}
         <div class="modal fade" id="CreateProd" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
@@ -166,15 +173,15 @@
                             <div class="form-group row">
                                 <label for="precobase" class="col-sm-2 col-form-label">Preço base</label>
                                 <div class="col-sm-10">
-                                    <input type="number" class="form-control" name="precobase" id="precobase"
-                                           placeholder="1.00" value="{{ req_prod.precobase }}" required>
+                                    <input type="number" step="0.01" class="form-control" name="precobase" id="precobase"
+                                           placeholder="9.99" value="" required>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label for="stock" class="col-sm-2 col-form-label">Quantidade</label>
                                 <div class="col-sm-10">
                                     <input type="number" class="form-control" name="stock" id="stock"
-                                           placeholder="1" value="{{ req_prod.precobase }}" required>
+                                           placeholder="10" value="" required>
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -188,7 +195,7 @@
             </div>
         </div>
     {% endblock %}
-    </section>
+{#    </section>#}
 {% endblock %}
 {% block js %}
     <script>
