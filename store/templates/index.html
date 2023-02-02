@@ -34,6 +34,9 @@
                 .card button:hover {
                     opacity: 0.7;
                 }
+                #filtros span{
+                  padding: 10px 20px;
+                }
             </style>
         {% endblock %}
 
@@ -69,27 +72,28 @@
             </div>
 
             <div class="row portfolio-container">
-                {% for prod in page_obj %}
-                    {% if forloop.counter < 5 %}
+                {% for prod in recomendados %}
                     <div class="col-lg-3 col-md-3 portfolio-item">
 
                         <div class="">
                             <div class="card">
-                                <img src="https://www.w3schools.com/w3images/jeans3.jpg" alt="Denim Jeans"
+                                <img src="/media{{ prod.Produto.img_url }}"
                                      style="width:100%">
-                                <h1>{{ prod.nome }}</h1>
+                                <h1>{{ prod.Produto.nome }}</h1>
                                 <p class="price">{{ prod.preco_base }}€</p>
-                                <p>{{ prod.descricao }}</p>
+                                {% if prod.pspp.promotion > 0 %}
+                                <p >Saldo {{ prod.pspp.promotion }} %</p>
+                                {% endif %}
+                                <p>{{ prod.Produto.descricao }}</p>
                                 <p>
                                 <form action="/" method="post"> {% csrf_token %}
-                                    <input type="hidden" name="id" value="{{ prod.id }}">
+                                    <input type="hidden" name="id" value="{{ prod.Produto.id }}">
                                     <button type="submit">Adicionar ao Carrinho</button>
                                 </form>
                                 </p>
                             </div>
                         </div>
                     </div>
-                    {% endif %}
                 {% endfor %}
 
             </div>
@@ -107,12 +111,12 @@
             </div>
 
             <div class="row">
-                <div class="col-lg-12 d-flex justify-content-center">
-                    <ul id="portfolio-flters">
-                        <li data-filter="*" class="filter-active">All</li>
-                        <li data-filter=".filter-app">App</li>
-                        <li data-filter=".filter-card">Card</li>
-                        <li data-filter=".filter-web">Web</li>
+                <div class="col-lg-12 d-flex justify-content-center" id="filtros">
+                        <span><a href="/#filtros">All</a></span>
+                        <span><a href="/?filter=informatica#filtros">Informática</a></span>
+                        <span><a href="/?filter=eletro-domestico#filtros">Eletro-domésticos</a></span>
+                        <span><a href="/?filter=vestuario#filtros">Vestuário</a></span>
+                        <span><a href="/?filter=bricolage#filtros">Bricolage</a></span>
                     </ul>
                 </div>
             </div>
@@ -124,14 +128,17 @@
 
                         <div class="">
                             <div class="card">
-                                <img src="{{ prod.img_url }}" alt="Denim Jeans"
+                                <img src="/media{{ prod.Produto.img_url }}" alt="Denim Jeans"
                                      style="width:100%">
-                                <h1>{{ prod.nome }}</h1>
-                                <p class="price">{{ prod.preco_base }}€</p>
-                                <p>{{ prod.descricao }}</p>
+                                <h1>{{ prod.Produto.nome }}</h1>
+                                <p class="price">{{ prod.pspp.preco_final }}€</p>
+                                {% if prod.pspp.promotion > 0 %}
+                                <p >Saldo {{ prod.pspp.promotion }} %</p>
+                                {% endif %}
+                                <p>{{ prod.Produto.descricao }}</p>
                                 <p>
                                 <form action="/" method="post"> {% csrf_token %}
-                                    <input type="hidden" name="id" value="{{ prod.id }}">
+                                    <input type="hidden" name="id" value="{{ prod.Produto.id }}">
                                     <button type="submit">Adicionar ao Carrinho</button>
                                 </form>
                                 </p>
@@ -165,53 +172,9 @@
             </div>
         </div>
     </section><!-- End Portfolio Section -->
-    {% block proddetails %}
-        {% for rp in req_prod %}
 
-            <div class="modal fade" id="ProdDetails" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-                 aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            {#                            {% debug %}#}
-                            <h5 class="modal-title" id="exampleModalLabel">{{ rp.nome }}</h5>
-
-                            <a href="/">
-                                <span aria-hidden="true">&times;</span>
-                            </a>
-                        </div>
-                        <div class="modal-body">
-                            <div class="form-group row">
-                                <p>Descrição:</p>
-                            </div>
-                            <div class="form-group row">
-                                <p>{{ rp.descricao }}</p>
-                            </div>
-
-                            {#                            <form action="/" method="post"> {% csrf_token %}#}
-                            {#                            </form>#}
-                        </div>
-                        {#<div class="modal-footer">#}
-                        {#<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>#}
-                        {#</div>#}
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    {% endblock %}
 {% endblock %}
 {% block js %}
-    <script>
 
-        //shortcut for $(document).ready
-        $(function () {
-            if (window.location.hash) {
-
-                var hash = window.location.hash;
-                $(hash).modal('toggle');
-                window.history.pushState("object or string", "Title", "/");
-            }
-        });
-    </script>
 {% endblock %}
 

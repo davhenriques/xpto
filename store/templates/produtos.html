@@ -1,9 +1,10 @@
 {% extends 'basic.html' %}
+{% load auth_extras %}
 {% block title %} Produtos {% endblock %}
 {% block css %}
 
     <style>
-        .modal-content{
+        .modal-content {
             width: 45vw;
         }
     </style>
@@ -15,9 +16,11 @@
                 <h1 class="display-4">Os teus produtos</h1>
                 <p class="lead">Verifica/Edita os teus produtos</p>
                 <hr class="my-4">
-                <a href="/produtos?action=create#CreateProd">
-                    <button type="button" class="btn btn-primary" data-dismiss="modal">Criar Produto</button>
-                </a>
+                {% if request.user|has_group:"Comercial Administrador" %}
+                    <a href="/produtos?action=create#CreateProd">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Criar Produto</button>
+                    </a>
+                {% endif %}
                 <p></p>
                 <table class="table table-striped table-responsive-md btn-table">
 
@@ -28,7 +31,12 @@
                         <th>Descrição</th>
                         <th>Preço base</th>
                         <th>Quantidade</th>
-                        <th>Ações</th>
+                        <th>Estado</th>
+                        <th>Categoria</th>
+                        <th>Parceiro</th>
+                        {% if request.user|has_group:"Comercial Administrador" %}
+                            <th>Ações</th>
+                        {% endif %}
                     </tr>
                     </thead>
 
@@ -41,30 +49,67 @@
                             <td>{{ prod.descricao }}</td>
                             <td>{{ prod.preco_base }}€</td>
                             <td>{{ prod.stock }}</td>
-                            <td>
-                                {#<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#EditProd">Launch demo modal</button>#}
-                                <a href="/produtos?id={{ prod.id }}#EditProd">
-                                    <svg
-                                            xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                            fill="currentColor"
-                                            class="bi bi-pencil cursor-pointer" viewBox="0 0 16 16">
-                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
-                                    </svg>
-                                </a>
-                                <form method="post"> {% csrf_token %}
-                                    <input type="hidden" name="id" value="{{ prod.id }}">
-                                    <input type="hidden" name="action" value="delete">
-                                    <button type="submit" style="border: none; background-color: transparent;">
-                                        <svg role="button" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                             fill="currentColor" class="bi bi-trash cursor-pointer" viewBox="0 0 16 16">
-                                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                                            <path fill-rule="evenodd"
-                                                  d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-                                        </svg>
-                                    </button>
+                            <td>{{ prod.estado }}</td>
+                            <td>{{ prod.tipo }}</td>
+                            <td>{{ prod.parceiro }}</td>
+                            {% if request.user|has_group:"Comercial Administrador" and prod.parceiro is 0 %}
 
-                                </form>
-                            </td>
+
+                                <td>
+                                    {#<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#EditProd">Launch demo modal</button>#}
+                                    <a href="/produtos?id={{ prod.id }}#EditProd">
+                                        <svg
+                                                xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                fill="currentColor"
+                                                class="bi bi-pencil cursor-pointer" viewBox="0 0 16 16">
+                                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                                        </svg>
+                                    </a>
+                                    <form method="post"> {% csrf_token %}
+                                        <input type="hidden" name="id" value="{{ prod.id }}">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="parceiro" value="0">
+                                        <button type="submit" style="border: none; background-color: transparent;">
+                                            <svg role="button" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                 fill="currentColor" class="bi bi-trash cursor-pointer"
+                                                 viewBox="0 0 16 16">
+                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                                <path fill-rule="evenodd"
+                                                      d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                            </svg>
+                                        </button>
+
+                                    </form>
+                                </td>
+                            {% endif %}
+                            {% if request.user|has_group:"Parceiro" and prod.parceiro is 1 %}
+                                <td>
+                                    {#<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#EditProd">Launch demo modal</button>#}
+                                    <a href="/produtos?id={{ prod.id }}#EditProd">
+                                        <svg
+                                                xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                fill="currentColor"
+                                                class="bi bi-pencil cursor-pointer" viewBox="0 0 16 16">
+                                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                                        </svg>
+                                    </a>
+                                    <form method="post"> {% csrf_token %}
+                                        <input type="hidden" name="id" value="{{ prod.id }}">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="parceiro" value="1">
+                                        <button type="submit" style="border: none; background-color: transparent;">
+                                            <svg role="button" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                 fill="currentColor" class="bi bi-trash cursor-pointer"
+                                                 viewBox="0 0 16 16">
+                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                                <path fill-rule="evenodd"
+                                                      d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                            </svg>
+                                        </button>
+
+                                    </form>
+                                </td>
+                            {% endif %}
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -75,7 +120,7 @@
 
         </div>
     </section>
-{#    <section>#}
+    {#    <section>#}
     <!-- Modal -->
     {% block editprod %}
         {% for rp in req_prod %}
@@ -84,7 +129,7 @@
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-{#                            {% debug %}#}
+                            {#                            {% debug %}#}
                             <h5 class="modal-title" id="exampleModalLabel">Editar produto #{{ rp.id }}</h5>
                             <a href="{% url 'produtos' %}">
                                 <span aria-hidden="true">&times;</span>
@@ -104,7 +149,8 @@
                                 <div class="form-group row">
                                     <label for="descricao" class="col-sm-2 col-form-label">Descrição</label>
                                     <div class="col-sm-10">
-                                        <textarea id="descricao" class="form-control"  name="descricao" rows="4" cols="50"
+                                        <textarea id="descricao" class="form-control" name="descricao" rows="4"
+                                                  cols="50"
                                                   required>{{ rp.descricao }}</textarea>
                                     </div>
                                 </div>
@@ -138,11 +184,12 @@
             </div>
         {% endfor %}
     {% endblock %}
-{#    </section>#}
-{#    <section>#}
+    {#    </section>#}
+    {#    <section>#}
     <!-- Modal Create -->
     {% block createprod %}
-        <div class="modal fade" id="CreateProd" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="CreateProd" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+             aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -152,8 +199,16 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form action="{% url 'produtos' %}" method="post" enctype="multipart/form-data"> {% csrf_token %}
+                        <form action="{% url 'produtos' %}" method="post"
+                              enctype="multipart/form-data"> {% csrf_token %}
                             <input type="hidden" name="action" value="create">
+                            <input type="hidden" name="parceiro"
+                                {% if request.user|has_group:"Parceiro" %}
+                                    value="1"
+                                {% else%}
+                                   value="0"
+                                {% endif %}
+                            >
                             <div class="form-group row">
                                 <label for="nome" class="col-sm-2 col-form-label">Nome</label>
                                 <div class="col-sm-10">
@@ -189,7 +244,8 @@
                             <div class="form-group row">
                                 <label for="precobase" class="col-sm-2 col-form-label">Preço base</label>
                                 <div class="col-sm-10">
-                                    <input type="number" step="0.01" class="form-control" name="precobase" id="precobase"
+                                    <input type="number" step="0.01" class="form-control" name="precobase"
+                                           id="precobase"
                                            placeholder="9.99" value="" required>
                                 </div>
                             </div>
@@ -211,7 +267,7 @@
             </div>
         </div>
     {% endblock %}
-{#    </section>#}
+    {#    </section>#}
 {% endblock %}
 {% block js %}
     <script>

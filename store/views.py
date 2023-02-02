@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, HttpResponse, Http404
 from django.core.paginator import Paginator
 from django.template.response import TemplateResponse
 from djongo.database import IntegrityError, DatabaseError
+from django.contrib.sessions.backends.db import SessionStore
+from django.contrib.sessions.models import Session
 from store.models import Produtos
 from django.db.models import Q
 from vendas.models import *
@@ -26,7 +28,7 @@ def isComercial1(user):
 
 
 def isComercial2(user):
-    return 'Comercial Supervisionador' in list(user.groups.values_list('name', flat=True))
+    return 'Comercial Supervisor' in list(user.groups.values_list('name', flat=True))
 
 
 def isParceiro(user):
@@ -36,43 +38,93 @@ def isParceiro(user):
 def isComprador(user):
     return 'Comprador' in list(user.groups.values_list('name', flat=True))
 
+def getHomePase(user):
 
+    if isComprador(user):
+        return ''
+    if isParceiro(user) or isComercial2(user) or isComercial1(user):
+        return '/produtos'
+    if isAdmin(user):
+        return '/administrarcomerciais'
 # views
 def index(request):
-    _prods = Produtos.objects.get_queryset().order_by('id')
-    prods = []
-    for p in _prods:
+    # se o utilizador não é cliente deve ser redirecionado para a página correta
+    if request.user.is_authenticated:
+        if 'Comprador' not in list(request.user.groups.values_list('name', flat=True)):
+            # print("getHomePase(request.user)={" + getHomePase(request.user) + "}")
+            # print(getHomePase(request.user))
+            return redirect(getHomePase(request.user))
+    # get recomendados
+    try:
+        recomendados_raw =Vendas_Produtos.objects.raw(
+            'select vp.prod_id as "id", count(vp.prod_id) from vendas_vendas_produtos as vp '
+            'left join vendas_prod_stock_preco as psp on vp.prod_id = psp.prod_id '
+            'where psp.stock > 0 '
+            'group by vp.prod_id '
+            'order by count(vp.prod_id) desc limit 4;')
+    except Exception as e:
+        print(e)
+    recomendados = []
+    for rec in recomendados_raw:
         try:
-            psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
-            prods.append({'id': p.id, 'descricao': p.descricao, 'nome': p.nome, 'preco_base': psp.preco_base,
-                          'stock': psp.stock, 'img_url': p.img_url, 'tipo': p.tipo})
+            recomendados.append({'Produto': Produtos.objects.get(id=rec.id), 'pspp': Produtos_Stock_Preco_Prom.objects.get(prod_id=rec.id)})
         except Exception as e:
-            print("except")
             print(e)
+    prods = []
+    # get produtos listagem
+    try:
+        _prods = Produtos_Stock_Preco_Prom.objects.all()
+        for p in _prods:
+            try:
+                if request.method == 'GET' and 'filter' in request.GET:
+                    aux = Produtos.objects.get(id=p.prod_id, tipo=request.GET['filter'])
+                else:
+                    aux = Produtos.objects.get(id=p.prod_id)
+                prods.append({'Produto': aux, 'pspp': p})
+            except Exception as e:
+                print(e)
+    except Exception as e:
+        print(e)
+
+    # get tipo de produto
+
     paginator = Paginator(prods, 24)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    context = {'page_obj': page_obj}
+    context = {'page_obj': page_obj, 'recomendados': recomendados}
     if request.method == 'GET':
         return render(request, "index.html", context)
     if request.method == 'POST':
         try:
-            carrinho = Carrinho.objects.create(user_id=request.user.id, prod_id=request.POST['id'], quantidade=1)
+            if request.user.is_authenticated:
+                print("request.user.is_authenticated")
+                carrinho = Carrinho.objects.create(user_id=request.user.id,
+                                                   prod_id=request.POST['id'],
+                                                   quantidade=1)
+            else:
+                print("request.session.session_key")
+                carrinho = Carrinho.objects.create(session_id=request.session.session_key,
+                                                   prod_id=request.POST['id'],
+                                                   quantidade=1)
             carrinho.save()
         except Exception as e:
+            print("Exception")
             print(e)
         return render(request, "index.html", context)
 
 
-@user_passes_test(isComprador)
+
 def cart(request):
+    if request.user.is_authenticated:
+        if 'Comprador' not in list(request.user.groups.values_list('name', flat=True)):
+            redirect(getHomePase(request.user))
     if request.method == 'POST':
         if 'id' in request.POST:
             if request.POST['action'] == 'alterar_quantidade':
                 try:
-                   cart = Carrinho.objects.get(id=request.POST['id'])
-                   cart.quantidade = request.POST['quantidade']
-                   cart.save()
+                    cart = Carrinho.objects.get(id=request.POST['id'])
+                    cart.quantidade = request.POST['quantidade']
+                    cart.save()
                 except Exception as e:
                     messages.error(request, "quantidade selecionada excede limite")
                     print(e)
@@ -84,16 +136,21 @@ def cart(request):
                 except Exception as e:
                     print(e)
         if request.POST['action'] == 'finalizar_compra':
-            print("finalizar_compra")
+            if not request.user.is_authenticated:
+                print("user no authenticated")
+                return redirect('/register/?next=/produtos')
             try:
-                print("finalizar_compra")
                 cursor = connections['vendas_psgl'].cursor()
                 cursor.execute("CALL finalizarcompra(%s);", [request.user.id])
-                redirect('/logs')
+                return redirect('/logs')
             except Exception as e:
                 print("deu erro!")
                 print(e)
-    _cart = Carrinho_Preco.objects.filter(user_id=request.user.id)
+    if request.user.is_authenticated:
+        _cart = Carrinho_Preco.objects.filter(user_id=request.user.id)
+    else:
+        _cart = Carrinho_Preco.objects.filter(session_id=request.session.session_key)
+    # estados = Estados.objects.all()
     cart = []
     for item in _cart:
         p = Produtos.objects.get(id=item.prod_id)
@@ -123,16 +180,22 @@ def produtos(request):
             except Exception as e:
                 print(e)
 
+        if request.POST.get('action') == 'ativar':
+            try:
+                Produtos.objects.filter(id=request.POST['id']).update(ativo=request.POST['ativo'])
+            except Exception as e:
+                print(e)
         if request.POST.get('action') == 'create':
             myfile = request.FILES['img_url']
             fs = FileSystemStorage()
-            filename = fs.save(str(uuid.uuid4())+".png", myfile)
+            filename = fs.save(str(uuid.uuid4()) + ".png", myfile)
             uploaded_file_url = fs.url(filename)
             try:
                 p = Produtos.objects.create(comercial_id=request.user.id,
                                             nome=request.POST['nome'],
                                             descricao=request.POST['descricao'],
                                             tipo=request.POST['tipo'],
+                                            parceiro=request.POST['parceiro'],
                                             img_url=uploaded_file_url)
                 p.save()
                 try:
@@ -151,17 +214,19 @@ def produtos(request):
                     Carrinho.objects.get(prod_id=request.POST['id']).delete()
                 except Exception as e:
                     print(e)
-    _prods = Produtos.objects.all()
     prods = []
-    i = 0
-    for p in _prods:
-        try:
-            psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
-            prods.append({'id': p.id, 'descricao': p.descricao, 'nome': p.nome, 'preco_base': psp.preco_base, 'stock': psp.stock})
-        except Exception as e:
-            print("except")
-            print(e)
+    try:
+        _prods = Produtos.objects.filter(parceiro=0)
+        for p in _prods:
 
+            psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
+            prods.append({'id': p.id, 'descricao': p.descricao, 'nome': p.nome, 'preco_base': psp.preco_base,
+                          'stock': psp.stock, 'estado': p.estado, 'parceiro': p.parceiro, 'tipo': p.tipo})
+
+
+    except Exception as e:
+        print(e)
+    print(_prods.values_list())
     context = {"prods": prods}
     if request.method == 'GET':
         req_id = request.GET.get('id')
@@ -170,7 +235,9 @@ def produtos(request):
                 req_prod = Produtos.objects.get(id=req_id)
                 req_prod_ar = []
                 req_psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
-                req_prod_ar.append({'id': req_prod.id, 'descricao': req_prod.descricao, 'nome': req_prod.nome, 'preco_base': req_psp.preco_base, 'stock': req_psp.stock})
+                req_prod_ar.append({'id': req_prod.id, 'descricao': req_prod.descricao, 'nome': req_prod.nome,
+                                    'preco_base': req_psp.preco_base, 'stock': req_psp.stock,
+                                    "estado": req_prod.estado, "parceiro": req_prod.parceiro})
                 context['req_prod'] = req_prod_ar
             except:
                 print("No product found with id ={" + req_id + "}")
@@ -182,7 +249,7 @@ def produtos(request):
 
 @user_passes_test(lambda u: isAdmin(u))
 def administrarcomerciais(request):
-    coms = User.objects.filter(Q(groups__name='Comercial Administrador') | Q(groups__name='Comercial Supervisor'))
+    coms = User.objects.filter(Q(groups__name='Comercial Administrador') | Q(groups__name='Comercial Supervisor') | Q(groups__name='Parceiro'))
     context = {"coms": coms}
     if request.method == 'POST' and request.POST['id'] is not None:
         if request.POST['action'] == 'delete':
@@ -226,6 +293,7 @@ def register(request):
                 group = Group.objects.get(name=request.POST['group'])
                 user.save()
                 group.user_set.add(user)
+                Carrinho.objects.filter(session_id=request.session.session_key).update(user_id=user.id)
         return render(request, '../templates/registration/login.html')
     groups = Group.objects.all()
     context = {"groups": groups}
@@ -239,22 +307,12 @@ def settings(request):
 
 @user_passes_test(isComprador)
 def logs(request):
-    vendas = Vendas.objects.raw("Select * from vendas_vendas as v inner join vendas_vendas_estado as ve on v.id = ve.vendas_id_id where user_id=" + str(request.user.id) + " order by ve.data desc")
+    if request.method == 'POST':
+        print(request.POST['action'])
+        print(request.POST['id'])
+
+    vendas = Vendas.objects.raw("Select * from vendas_vendas as v  inner join vendas_vendas_estado as ve on v.id = ve.vendas_id_id and ve.id in (Select id from vendas_vendas_estado where vendas_vendas_estado.vendas_id_id=v.id order by data desc limit 1) inner join vendas_estados as est on ve.estado_id = est.id where user_id=" + str(request.user.id) + " order by ve.data, ve.id desc")
     print(vendas)
     context = {'vendas': vendas}
     return render(request, 'logs.html', context)
-
-
-#def home(request):
-#   if request.method == 'GET':
-#       _prods = Produtos.objects.get_queryset().order_by('id')
-#       paginator = Paginator(_prods, 4)
-#       page_number = request.GET.get('page')
-#       page_obj = paginator.get_page(page_number)
-#       return render(request, "homepage.html", {'page_obj': page_obj})
-
-
-
-
-
 

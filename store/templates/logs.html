@@ -17,6 +17,7 @@
                     <th>Id Compra</th>
                     <th>Data</th>
                     <th>Estado</th>
+                    <th>Ações</th>
                 </tr>
                 </thead>
 
@@ -26,6 +27,15 @@
                         <td>{{ ven.vendas_id_id }}</td>
                         <td>{{ ven.data }}</td>
                         <td>{{ ven.estado }}</td>
+                        <td>
+                            {% if ven.estado_id == 0 %}
+                                <form action="/logs" method="post"> {% csrf_token %}
+                                    <input type="hidden" name="action" value="cancel">
+                                    <input type="hidden" name="id" value="{{ ven.vendas_id_id }}">
+                                    <button type="submit">Cancelar compra</button>
+                                </form>
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>

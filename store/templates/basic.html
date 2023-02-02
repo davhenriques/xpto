@@ -54,7 +54,7 @@
                 {% if user.is_authenticated %}
                     <li class="dropdown"><a href="#"><span>{{ request.user }}</span> <i class="bi bi-chevron-down"></i></a>
                       <ul>
-                        {% if request.user|has_group:"Comprador" %}
+                        {% if request.user|has_group:"Comprador"%}
                             <li><a class="nav-link" href="/logs">Registo de Compras</a></li>
                         {% endif %}
                         {% if request.user|has_group:"Comercial Administrador" %}
@@ -74,7 +74,7 @@
                     <li><a class="nav-link" href="/register">Registo</a></li>
                     <li><a class="getstarted" href="{% url 'login' %}">Login</a></li>
                 {% endif %}
-                {% if request.user|has_group:"Comprador" %}
+                {% if request.user|has_group:"Comprador" or not request.user.authenticated  %}
                   <li><a class="getstarted" href="/cart"><img src="{% static 'assets/img/cart-icon.png' %}" style="max-width: 23px;" alt=""></a></li>
                 {% endif %}
             </ul>

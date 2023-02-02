@@ -133,6 +133,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DATABASE_ROUTERS = ['routers.db_routers.AuthRouter', 'routers.db_routers.Store', 'routers.db_routers.Vendas']
 
