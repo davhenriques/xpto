@@ -7,6 +7,10 @@
         .modal-content {
             width: 45vw;
         }
+        td.actions{
+            display: flex;
+            justify-content: center;
+        }
     </style>
 {% endblock %}
 {% block body %}
@@ -55,7 +59,7 @@
                             {% if request.user|has_group:"Comercial Administrador" and prod.parceiro is 0 %}
 
 
-                                <td>
+                                <td class="actions">
                                     {#<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#EditProd">Launch demo modal</button>#}
                                     <a href="/produtos?id={{ prod.id }}#EditProd">
                                         <svg
@@ -78,12 +82,16 @@
                                                       d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
                                             </svg>
                                         </button>
-
                                     </form>
+                                    <a href="/produtos?id={{ prod.id }}#PromoProd">
+                                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shop" viewBox="0 0 16 16">
+                                          <path d="M2.97 1.35A1 1 0 0 1 3.73 1h8.54a1 1 0 0 1 .76.35l2.609 3.044A1.5 1.5 0 0 1 16 5.37v.255a2.375 2.375 0 0 1-4.25 1.458A2.371 2.371 0 0 1 9.875 8 2.37 2.37 0 0 1 8 7.083 2.37 2.37 0 0 1 6.125 8a2.37 2.37 0 0 1-1.875-.917A2.375 2.375 0 0 1 0 5.625V5.37a1.5 1.5 0 0 1 .361-.976l2.61-3.045zm1.78 4.275a1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0 1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0 1.375 1.375 0 1 0 2.75 0V5.37a.5.5 0 0 0-.12-.325L12.27 2H3.73L1.12 5.045A.5.5 0 0 0 1 5.37v.255a1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0zM1.5 8.5A.5.5 0 0 1 2 9v6h1v-5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v5h6V9a.5.5 0 0 1 1 0v6h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1V9a.5.5 0 0 1 .5-.5zM4 15h3v-5H4v5zm5-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3zm3 0h-2v3h2v-3z"/>
+                                        </svg>
+                                    </a>
                                 </td>
                             {% endif %}
-                            {% if request.user|has_group:"Parceiro" and prod.parceiro is 1 %}
-                                <td>
+                            {% if request.user|has_group:"Parceiro" and prod.parceiro is 1 and prod.user_id == request.user.id %}
+                                <td class="actions">
                                     {#<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#EditProd">Launch demo modal</button>#}
                                     <a href="/produtos?id={{ prod.id }}#EditProd">
                                         <svg
@@ -266,6 +274,57 @@
                 </div>
             </div>
         </div>
+    {% endblock %}
+
+    <!-- Modal Promotion -->
+    {% block PromoProd %}
+        {% for rp in req_prod %}
+            <div class="modal fade" id="PromoProd" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Adicionar produto</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="{% url 'produtos' %}" method="post"
+                                  enctype="multipart/form-data"> {% csrf_token %}
+                                <input type="hidden" name="action" value="promotion">
+
+                                <div class="form-group row">
+                                    <label for="nome" class="col-sm-2 col-form-label">Nome</label>
+                                    <div class="col-sm-10">
+                                        {{ req_prod.nome }}
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="img_url" class="col-sm-2 col-form-label">Preço Base</label>
+                                    <div class="col-sm-10">
+                                        {{ req_prod.preco_base }}
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="precobase" class="col-sm-2 col-form-label">Preço base</label>
+                                    <div class="col-sm-10">
+                                        <input type="number" step="1" class="form-control" name="promotion"
+                                               id="promotion"
+                                               placeholder="10" value="0" required>%
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-10">
+                                        <button type="submit" class="btn btn-primary">Gravar</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
     {% endblock %}
     {#    </section>#}
 {% endblock %}

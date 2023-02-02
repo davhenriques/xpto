@@ -164,7 +164,7 @@ def checkout(request):
     return render(request, "checkout.html")
 
 
-@user_passes_test(lambda u: isComercial1(u) or isComercial2(u))
+@user_passes_test(lambda u: isComercial1(u) or isComercial2(u) or isParceiro(u))
 def produtos(request):
     if request.method == 'POST':
         if request.POST.get('action') == 'edit':
@@ -202,6 +202,10 @@ def produtos(request):
                     pstockprice = Prod_Stock_Preco.objects.create(prod_id=p.id,
                                                                   preco_base=request.POST['precobase'],
                                                                   stock=request.POST['stock'])
+                    pstockprice.save()
+                    pprom=Promocoes.objects.create(prod_id=p.id,
+                                                   percentagem=0)
+                    pprom.save()
                 except:
                     p.delete()
             except Exception as e:
@@ -216,12 +220,13 @@ def produtos(request):
                     print(e)
     prods = []
     try:
-        _prods = Produtos.objects.filter(parceiro=0)
+        _prods = Produtos.objects.all()
         for p in _prods:
 
             psp = Prod_Stock_Preco.objects.get(prod_id=p.id)
             prods.append({'id': p.id, 'descricao': p.descricao, 'nome': p.nome, 'preco_base': psp.preco_base,
-                          'stock': psp.stock, 'estado': p.estado, 'parceiro': p.parceiro, 'tipo': p.tipo})
+                          'stock': psp.stock, 'estado': p.estado, 'parceiro': p.parceiro, 'tipo': p.tipo,
+                          'user_id': p.user})
 
 
     except Exception as e:
@@ -302,12 +307,32 @@ def register(request):
 
 @login_required(login_url="/accounts/login/")
 def settings(request):
+    if request.method == 'POST':
+        if request.POST['action'] == 'nome':
+            try:
+                user = User.objects.get(id=request.user.id)
+                user.first_name = first_name=request.POST['nome']
+                user.last_name = last_name=request.POST['sobrenome']
+            except Exception as e:
+                print(e)
+            if request.POST['action'] == 'nome':
+                try:
+                    user = User.objects.get(id=request.user.id)
+                    user.first_name = first_name = request.POST['nome']
+                    user.last_name = last_name = request.POST['sobrenome']
+                except Exception as e:
+                    print(e)
     return render(request, 'settings.html')
 
 
 @user_passes_test(isComprador)
 def logs(request):
     if request.method == 'POST':
+        try:
+            cursor = connections['vendas_psgl'].cursor()
+            cursor.execute("CALL cancelarcompra(%s);", [request.POST['id']])
+        except Exception as e:
+            print(e)
         print(request.POST['action'])
         print(request.POST['id'])
 

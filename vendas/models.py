@@ -49,7 +49,7 @@ class Vendas_Produtos(models.Model):
 class Promocoes(models.Model):
     prod_id = models.IntegerField()
     percentagem = models.DecimalField(decimal_places=2, max_digits=5)
-    data_exp = models.DateTimeField()
+    data_exp = models.DateTimeField(auto_now_add=True, blank=True)
 
     def __str__(self):
         return self.nome
