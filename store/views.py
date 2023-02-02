@@ -398,7 +398,7 @@ def logs(request):
     return render(request, 'logs.html', context)
 
 
-@user_passes_test(lambda u: isComercial1(u) or isComercial2(u) or isParceiro(u))
+@user_passes_test(lambda u: isComercial1(u) or isComercial2(u))
 def vendas(request):
     # delete
     if request.method == 'POST' and request.POST['action'] == 'delete':
@@ -443,7 +443,7 @@ def vendas(request):
     return render(request, 'vendas.html', context)
 
 
-@user_passes_test(lambda u: isComercial1(u) or isComercial2(u) or isParceiro(u))
+@user_passes_test(lambda u: isComercial1(u) or isComercial2(u))
 def vendasprods(request):
     filtro = ''
     if request.method == 'POST':
