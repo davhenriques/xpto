@@ -30,4 +30,10 @@ class Produtos(models.Model):
     def __str__(self):
         return self.nome
 
+class AtividadeComerciais(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    data = models.DateTimeField(auto_now_add=True, blank=True)
+    acao = models.CharField(max_length=1024)
 
+    def __str__(self):
+        return self.nome

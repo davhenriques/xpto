@@ -20,10 +20,33 @@
                 <h1 class="display-4">Os teus produtos</h1>
                 <p class="lead">Verifica/Edita os teus produtos</p>
                 <hr class="my-4">
+                {% if request.user|has_group:"Parceiro" %}
+                    <a href="/produtos?action=create#CreateProd">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Criar Produto</button>
+                    </a>
+                {% endif %}
+                {% if request.user|has_group:"Comercial Supervisor" %}
+                    <a href="/produtos?action=xml">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Exportar dados para XML</button>
+                    </a>
+                    {% if xml is not None %}
+                        <p>{{ xml.sql }}</p>
+                        <p>{{ xml.mongo }}</p>
+                    {% endif %}
+                {% endif %}
                 {% if request.user|has_group:"Comercial Administrador" %}
                     <a href="/produtos?action=create#CreateProd">
                         <button type="button" class="btn btn-primary" data-dismiss="modal">Criar Produto</button>
                     </a>
+                {% endif %}
+                {% if request.user|has_group:"Comercial Supervisor" %}
+                    <a href="/produtos?action=json">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Exportar dados para JSON</button>
+                    </a>
+                    {% if json is not None %}
+                        <p>{{ json.sql }}</p>
+                        <p>{{ json.mongo }}</p>
+                    {% endif %}
                 {% endif %}
                 <p></p>
                 <table class="table table-striped table-responsive-md btn-table">
@@ -34,11 +57,12 @@
                         <th>Nome</th>
                         <th>Descrição</th>
                         <th>Preço base</th>
-                        <th>Quantidade</th>
+                        <th>Stock</th>
                         <th>Estado</th>
+                        <th>Promoção</th>
                         <th>Categoria</th>
                         <th>Parceiro</th>
-                        {% if request.user|has_group:"Comercial Administrador" %}
+                        {% if request.user|has_group:"Comercial Administrador" or request.user|has_group:"Parceiro" %}
                             <th>Ações</th>
                         {% endif %}
                     </tr>
@@ -47,21 +71,48 @@
                     <tbody>
                     {% for prod in prods %}
                         <tr>
-                            <th scope="row">{{ prod.id }}</th>
+                            <th scope="row">{{ prod.Produto.id }}</th>
 
-                            <td>{{ prod.nome }}</td>
-                            <td>{{ prod.descricao }}</td>
-                            <td>{{ prod.preco_base }}€</td>
-                            <td>{{ prod.stock }}</td>
-                            <td>{{ prod.estado }}</td>
-                            <td>{{ prod.tipo }}</td>
-                            <td>{{ prod.parceiro }}</td>
-                            {% if request.user|has_group:"Comercial Administrador" and prod.parceiro is 0 %}
+                            <td>{{ prod.Produto.nome }}</td>
+                            <td>{{ prod.Produto.descricao }}</td>
+                            <td>{{ prod.pspp.preco_base }}€</td>
+                            <td>{{ prod.pspp.stock }}</td>
+                            <td style="display: flex; justify-content: center"><span>{{ prod.Produto.estado }}</span>
+                                {% if prod.Produto.estado == "desativo" and request.user|has_group:"Comercial Administrador" %}
+                                    <form method="post"> {% csrf_token %}
+                                        <input type="hidden" name="id" value="{{ prod.Produto.id }}">
+                                        <input type="hidden" name="action" value="ativar">
+                                        <input type="hidden" name="ativo" value="ativo">
+                                        <button type="submit" class="btn btn-outline-secondary">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
+  <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"></path>
+</svg>
+                  <span class="visually-hidden">Button</span>
+                </button>
+                                    </form>
+                                {% elif request.user|has_group:"Comercial Administrador" %}
+                                    <form method="post"> {% csrf_token %}
+                                        <input type="hidden" name="id" value="{{ prod.Produto.id }}">
+                                        <input type="hidden" name="action" value="ativar">
+                                        <input type="hidden" name="ativo" value="desativo">
+                                        <button type="submit" class="btn btn-outline-secondary">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+</svg>
+                  <span class="visually-hidden">Button</span>
+                </button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                            <td>{{ prod.pspp.promotion }}% {% if prod.pspp.validade is not None %} (valido até: {{ prod.pspp.validade }} ) {% endif %}</td>
+                            <td>{{ prod.Produto.tipo }}</td>
+                            <td>{{ prod.Produto.parceiro }}</td>
+                            {% if request.user|has_group:"Comercial Administrador" and prod.Produto.parceiro is 0 %}
 
 
                                 <td class="actions">
                                     {#<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#EditProd">Launch demo modal</button>#}
-                                    <a href="/produtos?id={{ prod.id }}#EditProd">
+                                    <a href="/produtos?id={{ prod.Produto.id }}#EditProd">
                                         <svg
                                                 xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                                 fill="currentColor"
@@ -70,7 +121,7 @@
                                         </svg>
                                     </a>
                                     <form method="post"> {% csrf_token %}
-                                        <input type="hidden" name="id" value="{{ prod.id }}">
+                                        <input type="hidden" name="id" value="{{ prod.Produto.id }}">
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="parceiro" value="0">
                                         <button type="submit" style="border: none; background-color: transparent;">
@@ -83,17 +134,17 @@
                                             </svg>
                                         </button>
                                     </form>
-                                    <a href="/produtos?id={{ prod.id }}#PromoProd">
+                                    <a href="/produtos?id={{ prod.Produto.id }}#PromoProd">
                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shop" viewBox="0 0 16 16">
                                           <path d="M2.97 1.35A1 1 0 0 1 3.73 1h8.54a1 1 0 0 1 .76.35l2.609 3.044A1.5 1.5 0 0 1 16 5.37v.255a2.375 2.375 0 0 1-4.25 1.458A2.371 2.371 0 0 1 9.875 8 2.37 2.37 0 0 1 8 7.083 2.37 2.37 0 0 1 6.125 8a2.37 2.37 0 0 1-1.875-.917A2.375 2.375 0 0 1 0 5.625V5.37a1.5 1.5 0 0 1 .361-.976l2.61-3.045zm1.78 4.275a1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0 1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0 1.375 1.375 0 1 0 2.75 0V5.37a.5.5 0 0 0-.12-.325L12.27 2H3.73L1.12 5.045A.5.5 0 0 0 1 5.37v.255a1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0zM1.5 8.5A.5.5 0 0 1 2 9v6h1v-5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v5h6V9a.5.5 0 0 1 1 0v6h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1V9a.5.5 0 0 1 .5-.5zM4 15h3v-5H4v5zm5-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3zm3 0h-2v3h2v-3z"/>
                                         </svg>
                                     </a>
                                 </td>
                             {% endif %}
-                            {% if request.user|has_group:"Parceiro" and prod.parceiro is 1 and prod.user_id == request.user.id %}
+                            {% if request.user|has_group:"Parceiro" and prod.Produto.parceiro is 1 and prod.Produto.user_id == request.user.id %}
                                 <td class="actions">
                                     {#<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#EditProd">Launch demo modal</button>#}
-                                    <a href="/produtos?id={{ prod.id }}#EditProd">
+                                    <a href="/produtos?id={{ prod.Produto.id }}#EditProd">
                                         <svg
                                                 xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                                 fill="currentColor"
@@ -102,7 +153,7 @@
                                         </svg>
                                     </a>
                                     <form method="post"> {% csrf_token %}
-                                        <input type="hidden" name="id" value="{{ prod.id }}">
+                                        <input type="hidden" name="id" value="{{ prod.Produto.id }}">
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="parceiro" value="1">
                                         <button type="submit" style="border: none; background-color: transparent;">
@@ -116,6 +167,11 @@
                                         </button>
 
                                     </form>
+                                    <a href="/produtos?id={{ prod.Produto.id }}#PromoProd">
+                                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shop" viewBox="0 0 16 16">
+                                          <path d="M2.97 1.35A1 1 0 0 1 3.73 1h8.54a1 1 0 0 1 .76.35l2.609 3.044A1.5 1.5 0 0 1 16 5.37v.255a2.375 2.375 0 0 1-4.25 1.458A2.371 2.371 0 0 1 9.875 8 2.37 2.37 0 0 1 8 7.083 2.37 2.37 0 0 1 6.125 8a2.37 2.37 0 0 1-1.875-.917A2.375 2.375 0 0 1 0 5.625V5.37a1.5 1.5 0 0 1 .361-.976l2.61-3.045zm1.78 4.275a1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0 1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0 1.375 1.375 0 1 0 2.75 0V5.37a.5.5 0 0 0-.12-.325L12.27 2H3.73L1.12 5.045A.5.5 0 0 0 1 5.37v.255a1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0zM1.5 8.5A.5.5 0 0 1 2 9v6h1v-5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v5h6V9a.5.5 0 0 1 1 0v6h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1V9a.5.5 0 0 1 .5-.5zM4 15h3v-5H4v5zm5-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3zm3 0h-2v3h2v-3z"/>
+                                        </svg>
+                                    </a>
                                 </td>
                             {% endif %}
                         </tr>
@@ -138,20 +194,20 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             {#                            {% debug %}#}
-                            <h5 class="modal-title" id="exampleModalLabel">Editar produto #{{ rp.id }}</h5>
+                            <h5 class="modal-title" id="exampleModalLabel">Editar produto #{{ rp.Produto.id }}</h5>
                             <a href="{% url 'produtos' %}">
                                 <span aria-hidden="true">&times;</span>
                             </a>
                         </div>
                         <div class="modal-body">
                             <form action="{% url 'produtos' %}" method="post"> {% csrf_token %}
-                                <input type="hidden" name="id" value="{{ rp.id }}">
+                                <input type="hidden" name="id" value="{{ rp.Produto.id }}">
                                 <input type="hidden" name="action" value="edit">
                                 <div class="form-group row">
                                     <label for="nome" class="col-sm-2 col-form-label">Nome</label>
                                     <div class="col-sm-10">
                                         <input type="text" class="form-control" name="nome" id="nome"
-                                               placeholder="Nome" value="{{ rp.nome }}" required>
+                                               placeholder="Nome" value="{{ rp.Produto.nome }}" required>
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -159,7 +215,7 @@
                                     <div class="col-sm-10">
                                         <textarea id="descricao" class="form-control" name="descricao" rows="4"
                                                   cols="50"
-                                                  required>{{ rp.descricao }}</textarea>
+                                                  required>{{ rp.Produto.descricao }}</textarea>
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -167,14 +223,14 @@
                                     <div class="col-sm-10">
                                         <input type="number" step="0.01" name="precobase" class="form-control"
                                                id="precobase"
-                                               placeholder="{{ rp.preco_base }}" value="{{ rp.preco_base }}" required>
+                                               placeholder="{{ rp.pspp.preco_base }}" value="{{ rp.pspp.preco_base }}" required>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label for="stock" class="col-sm-2 col-form-label">Quantidade</label>
                                     <div class="col-sm-10">
                                         <input type="number" class="form-control" name="stock" id="stock"
-                                               placeholder="1" value="{{ rp.stock }}" required>
+                                               placeholder="1" value="{{ rp.pspp.stock }}" required>
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -284,7 +340,7 @@
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">Adicionar produto</h5>
+                            <h5 class="modal-title" id="exampleModalLabel">Adicionar Promoção %%</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
@@ -292,26 +348,34 @@
                         <div class="modal-body">
                             <form action="{% url 'produtos' %}" method="post"
                                   enctype="multipart/form-data"> {% csrf_token %}
+                                <input type="hidden" name="id" value="{{ rp.Produto.id }}">
                                 <input type="hidden" name="action" value="promotion">
 
                                 <div class="form-group row">
                                     <label for="nome" class="col-sm-2 col-form-label">Nome</label>
                                     <div class="col-sm-10">
-                                        {{ req_prod.nome }}
+                                        {{ rp.Produto.nome }}
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label for="img_url" class="col-sm-2 col-form-label">Preço Base</label>
                                     <div class="col-sm-10">
-                                        {{ req_prod.preco_base }}
+                                        {{ rp.pspp.preco_base }} €
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="precobase" class="col-sm-2 col-form-label">Preço base</label>
+                                    <label for="promotion" class="col-sm-2 col-form-label">Promoção (%)</label>
                                     <div class="col-sm-10">
                                         <input type="number" step="1" class="form-control" name="promotion"
                                                id="promotion"
-                                               placeholder="10" value="0" required>%
+                                               placeholder="10" value="{{ rp.pspp.promotion }}" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="validade" class="col-sm-2 col-form-label">Valida até:</label>
+                                    <div class="col-sm-10">
+                                        <input type="date" class="form-control" name="validade"
+                                               id="validade" value="{{ rp.pspp.validade }}" required>
                                     </div>
                                 </div>
                                 <div class="form-group row">

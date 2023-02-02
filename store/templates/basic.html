@@ -57,11 +57,17 @@
                         {% if request.user|has_group:"Comprador"%}
                             <li><a class="nav-link" href="/logs">Registo de Compras</a></li>
                         {% endif %}
-                        {% if request.user|has_group:"Comercial Administrador" %}
+                        {% if request.user|has_group:"Comercial Administrador" or request.user|has_group:"Comercial Supervisor" or request.user|has_group:"Parceiro" %}
                             <li><a class="nav-link {% block produtosactive %} {% endblock produtosactive %}" href="/produtos">Produtos</a></li>
                         {% endif %}
+                        {% if request.user|has_group:"Comercial Administrador" or request.user|has_group:"Comercial Supervisor" %}
+                            <li><a class="nav-link {% block vendasactive %} {% endblock vendasactive %}" href="/vendas">Registo de Vendas</a></li>
+                        {% endif %}
+                        {% if request.user|has_group:"Comercial Administrador" or request.user|has_group:"Comercial Supervisor" %}
+                            <li><a class="nav-link {% block prodvendasactive %} {% endblock prodvendasactive %}" href="/vendasprods">Registo de Produtos vendido</a></li>
+                        {% endif %}
                         {% if request.user|has_group:"Comercial Supervisor" %}
-                            <li><a class="nav-link {% block comerciaisactive %} {% endblock comerciaisactive %}" href="/comerciais">Comerciais</a></li>
+                            <li><a class="nav-link {% block comerciaisactive %} {% endblock comerciaisactive %}" href="/atividadecomerciais">Atividade de Comerciais Administradores</a></li>
                         {% endif %}
                         {% if request.user|has_group:"admin" %}
                             <li><a class="nav-link {% block adminpageactive %} {% endblock adminpageactive %}" href="/administrarcomerciais">Administrar Comerciais</a></li>

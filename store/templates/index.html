@@ -77,7 +77,7 @@
 
                         <div class="">
                             <div class="card">
-                                <img src="/media{{ prod.Produto.img_url }}"
+                                <img src="{{ prod.Produto.img_url }}"
                                      style="width:100%">
                                 <h1>{{ prod.Produto.nome }}</h1>
                                 <p class="price">{{ prod.preco_base }}€</p>
@@ -128,7 +128,7 @@
 
                         <div class="">
                             <div class="card">
-                                <img src="/media{{ prod.Produto.img_url }}" alt="Denim Jeans"
+                                <img src="{{ prod.Produto.img_url }}" alt="Denim Jeans"
                                      style="width:100%">
                                 <h1>{{ prod.Produto.nome }}</h1>
                                 <p class="price">{{ prod.pspp.preco_final }}€</p>

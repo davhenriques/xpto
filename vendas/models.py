@@ -81,6 +81,8 @@ class Produtos_Stock_Preco_Prom(models.Model):
     preco_base = models.DecimalField(decimal_places=2, max_digits=6)
     promotion = models.DecimalField(decimal_places=2, max_digits=6)
     preco_final = models.DecimalField(decimal_places=2, max_digits=6)
+    validade = models.DateTimeField()
+    stock = models.IntegerField()
 
     class Meta:
         managed = False

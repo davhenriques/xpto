@@ -1,0 +1,85 @@
+{% extends 'basic.html' %}
+{% block title %} Vendas {% endblock %}
+
+{% block body %}
+{% load auth_extras %}
+
+<section id="hero" class="d-flex">
+    <div class="container my-4">
+        <div class="jumbotron">
+            <h1 class="display" style="margin-bottom:0px;">Registo de Vendas de Cliente</h1>
+            <hr class="my-2">
+
+            <table class="table table-striped table-responsive-md btn-table">
+
+                <thead>
+                <tr>
+                    <th># Compra</th>
+                    <th># User</th>
+                    <th>Data</th>
+                    <th>Estado</th>
+                    {% if request.user|has_group:"Comercial Administrador" %}
+                        <th>Ações</th>
+                    {% endif %}
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for ven in vendas %}
+                    <tr>
+                        <td>{{ ven.vendas_id_id }}</td>
+                        <td>{{ ven.data }}</td>
+                        <td>{{ ven.data }}</td>
+                        <td>{{ ven.estado }}</td>
+                        {% if request.user|has_group:"Comercial Administrador" %}
+                        <td>
+                            {% if ven.estado_id == 0 %}
+                                <form action="/vendas" method="post"> {% csrf_token %}
+                                    <input type="hidden" name="action" value="cancel">
+                                    <input type="hidden" name="id" value="{{ ven.vendas_id_id }}">
+                                    <button type="submit">Cancelar compra</button>
+                                </form>
+                                <form action="/vendas" method="post"> {% csrf_token %}
+                                    <input type="hidden" name="action" value="nextstate">
+                                    <input type="hidden" name="id" value="{{ ven.vendas_id_id }}">
+                                    <input type="hidden" name="estado" value="1">
+                                    <button type="submit">{% for e in estados %} {% if e.id == 1 %}
+                                        {{ e.estado }}
+                                    {% endif %}  {% endfor %}</button>
+                                </form>
+                            {% endif %}
+                            {% if ven.estado_id == 1 %}
+                                <form action="/vendas" method="post"> {% csrf_token %}
+                                    <input type="hidden" name="action" value="nextstate">
+                                    <input type="hidden" name="id" value="{{ ven.vendas_id_id }}">
+                                    <input type="hidden" name="estado" value="2">
+                                    <button type="submit">{% for e in estados %} {% if e.id == 2 %}
+                                        {{ e.estado }}
+                                    {% endif %}  {% endfor %}</button>
+                                </form>
+                            {% endif %}
+                            {% if ven.estado_id == 2 %}
+                                <form action="/vendas" method="post"> {% csrf_token %}
+                                    <input type="hidden" name="action" value="nextstate">
+                                    <input type="hidden" name="id" value="{{ ven.vendas_id_id }}">
+                                    <input type="hidden" name="estado" value="3">
+                                    <button type="submit">{% for e in estados %} {% if e.id == 3 %}
+                                        {{ e.estado }}
+                                    {% endif %}  {% endfor %}</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+
+    </div>
+
+    </section>
+
+{% endblock %}
